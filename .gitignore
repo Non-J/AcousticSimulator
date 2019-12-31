@@ -1,0 +1,6 @@
+# Clion Configulations
+.idea/
+
+# Outputs while testing
+core/data.json
+core/output*.csv

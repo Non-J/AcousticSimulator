@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>title</title>
+</head>
+
+<body>
+
+	<input id="wss-channel"></input>
+	<textarea id="wss-testinput"></textarea>
+
+	<button id="wss-testsubmit">Submit</button>
+
+	<script>
+		let socket = new WebSocket("ws://localhost:1200/api/wsevent/d");
+
+		window.addEventListener("click", (event) => {
+			socket.send(document.getElementById("wss-testinput").value);
+		});
+
+		socket.onopen = function (e) {
+			console.log("[open] Connection established");
+		};
+
+		socket.onmessage = function (event) {
+			console.log(`[message] Data received from server: ${event.data}`);
+		};
+
+		socket.onclose = function (event) {
+			if (event.wasClean) {
+				console.error(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+			} else {
+				console.error('[close] Connection died');
+			}
+		};
+
+		socket.onerror = function (error) {
+			alert(`[error] ${error.message}`);
+		};
+	</script>
+
+	<script type="text/javascript">
+		function autorun() {
+
+		}
+		if (document.addEventListener) document.addEventListener("DOMContentLoaded", autorun, false);
+		else if (document.attachEvent) document.attachEvent("onreadystatechange", autorun);
+		else window.onload = autorun;
+	</script>
+</body>
+
+</html>
