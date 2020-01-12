@@ -11,10 +11,11 @@ use actix_web::{
     web, HttpResponse,
 };
 use actix::Actor;
+use std::borrow::Borrow;
 
 #[get("/")]
 async fn get_home() -> impl actix_web::Responder {
-    actix_files::NamedFile::open("web/index.html")
+    actix_files::NamedFile::open("interface/public/index.html")
 }
 
 struct SharedAPIData {
@@ -72,6 +73,7 @@ async fn main() -> std::io::Result<()> {
                     .service(get_run_computation)
                     .route("/wsevent/{channel_name}", web::get().to(events_server::ws_events))
             )
+            .service(actix_files::Files::new("/", "./interface/public").show_files_listing())
             .default_service(
                 web::resource("")
                     .route(web::get().to(HttpResponse::NotFound))

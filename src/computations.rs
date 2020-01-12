@@ -120,16 +120,16 @@ pub async fn compute_and_export(config: &data_structures::ConfigPacket) -> Resul
 
 fn export_output(filename: &str, csv_header: &str, csv_content: &Vec<Vec<f64>>) {
     let mut file = std::fs::File::create(filename).expect("Unable to write output files.");
-    file.write(csv_header.as_bytes());
-    file.write("\n".as_bytes());
+    file.write(csv_header.as_bytes()).expect("Failed to write output files.");
+    file.write("\n".as_bytes()).expect("Failed to write output files.");
     for line in csv_content.iter() {
         for elem in line.iter() {
-            file.write(elem.to_string().as_bytes());
-            file.write(",".as_bytes());
+            file.write(elem.to_string().as_bytes()).expect("Failed to write output files.");
+            file.write(",".as_bytes()).expect("Failed to write output files.");
         }
-        file.write("\n".as_bytes());
+        file.write("\n".as_bytes()).expect("Failed to write output files.");
     }
-    file.flush();
+    file.flush().expect("Failed to write output files.");
 }
 
 #[derive(Debug)]

@@ -2,5 +2,9 @@
 .idea/
 
 # Outputs while testing
-core/data.json
-core/output*.csv
+data.json
+output*.csv
+
+# Rust
+/target
+**/*.rs.bk
