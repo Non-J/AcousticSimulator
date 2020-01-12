@@ -6,6 +6,7 @@
   import remove from "lodash/remove";
 
   import { simulationConfiguration } from "./store.js";
+  import * as utils from "./utils.js";
 
   import { onMount, onDestroy } from "svelte";
 
@@ -16,16 +17,7 @@
   onMount(() => {
     setTimeout(() => {
       $simulationConfiguration["transducers"].forEach(transducer => {
-        tableData.push({
-          ...transducer,
-          position_x: transducer["position"][0],
-          position_y: transducer["position"][1],
-          position_z: transducer["position"][2],
-          target_x: transducer["target"][0],
-          target_y: transducer["target"][1],
-          target_z: transducer["target"][2],
-          rid: Math.random()
-        });
+        tableData.push(transducer.tableRowData);
       });
       table = new tabulator.default(tableTarget, {
         movableRows: true,
@@ -152,24 +144,7 @@
   function saveTransducers() {
     let result = [];
     tableData.forEach(row => {
-      result.push({
-        id: row["id"],
-        radius: Number(row["radius"]),
-        phase_shift: Number(row["phase_shift"]),
-        loss_factor: Number(row["loss_factor"]),
-        output_power: Number(row["output_power"]),
-        wavelength: Number(row["wavelength"]),
-        position: [
-          Number(row["position_x"]),
-          Number(row["position_y"]),
-          Number(row["position_z"])
-        ],
-        target: [
-          Number(row["target_x"]),
-          Number(row["target_y"]),
-          Number(row["target_z"])
-        ]
-      });
+      result.push(utils.Transducer.fromTableRowData(row));
     });
     simulationConfiguration.set({
       ...$simulationConfiguration,
@@ -178,21 +153,8 @@
   }
 
   function addTransducers() {
-    tableData.push({
-      id: "",
-      position_x: 0.0,
-      position_y: 0.0,
-      position_z: 0.0,
-      target_x: 0.0,
-      target_y: 1.0,
-      target_z: 0.0,
-      radius: 0.5,
-      phase_shift: 0.0,
-      loss_factor: 1.0,
-      output_power: 1.0,
-      wavelength: 8.0,
-      rid: Math.random(),
-    });
+    let transducer = new utils.Transducer();
+    tableData.push(transducer.tableRowData);
   }
 
   function removeTransducers() {
@@ -207,6 +169,39 @@
       }
     }
   }
+
+  function multieditor() {
+    let selected = table.getSelectedData();
+
+    let editFields = [
+      "radius",
+      "phase_shift",
+      "loss_factor",
+      "output_power",
+      "wavelength"
+    ];
+    let newValues = {};
+
+    for (let field of editFields) {
+      let query = window.prompt(
+        `Enter new ${field} value (Leave empty for unchange)`
+      );
+      if (query !== "" && !Number.isNaN(Number(query))) {
+        newValues[field] = Number(query);
+      }
+    }
+
+    for (let i = 0; i < tableData.length; i++) {
+      if (
+        find(selected, (val, idx, col) => isEqual(val, tableData[i])) !==
+        undefined
+      ) {
+        for (let field in newValues) {
+          tableData[i][field] = newValues[field];
+        }
+      }
+    }
+  }
 </script>
 
 <link href="tabulator.min.css" rel="stylesheet" />
@@ -215,5 +210,6 @@
 <button on:click={saveTransducers}>Save Transducers</button>
 <button on:click={addTransducers}>Add Transducers</button>
 <button on:click={removeTransducers}>Remove Selected Transducers</button>
+<button on:click={multieditor}>Multi Edit</button>
 <div id="transducers-table" bind:this={tableTarget} />
 <slot />

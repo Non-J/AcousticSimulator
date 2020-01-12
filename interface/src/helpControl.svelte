@@ -62,7 +62,8 @@
 
   <h3>Simulation</h3>
   <p>
-    Simulation tab hosts control of the simulator. This is also where you start the computation.
+    Simulation tab hosts control of the simulator. This is also where you start
+    the computation.
     <br />
     Toggle Simulation Region On/Off to visualize the region that will be
     simulated.
@@ -89,7 +90,14 @@
   <p>
     The transducer tab shows a table of all transducers.
     <br />
-    For changes made to take effect, 
+    Each of the row represent a transducer, and column is its configuration.
+    Each row and column can be reordered and resized.
+    <br />
+    To edit, click on the desired value and make changes. To remove or edit
+    multiple transducers, use the left most tickbox to select and click on the
+    button to start.
+    <br />
+    For changes made to take effect, click on "Save Transducers".
   </p>
 
   <h3>Known Problems and Potential Work Arounds</h3>
@@ -101,7 +109,8 @@
       comforms to the web standard and technology.
     </li>
     <li>
-      If the transducer table is empty, click on the table header to refresh it.
+      If the transducer table is empty or is drawn incorrectly, click on the
+      table header to refresh it.
     </li>
     <li>
       Data validation is not complete. Invalid simulation configulation may

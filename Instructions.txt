@@ -1,0 +1,44 @@
+1) Extract zip file into a folder. (Important!)
+2) Run "acoustic_simulator.exe".
+3) Follow the further instructions shown on the program window.
+4) Open the interface in web browser. Use the URL "http://localhost:1200" (Without quotation marks)
+5) There are further instructions inside the interface.
+
+
+Making Copies of Save Data:
+Save data are stored in "data.json" file, which should be next to the .exe file.
+You may copy and keep them elsewhere. To load backup, place the file next to the .exe, rename it to "data.json", and reopen the program.
+If the save data becomes corrupted, delete them and load from the backup, or reopen the program and let the program recreate a new save data.
+
+
+Potential Problems and Solutions:
+
+Problem: Incompatible System
+Solution: 
+	The program has only been tested on Windows 10 64-bit version. 
+	The program uses web browser as its interactive interface. 
+	The program has only been tested on the latest version of Firefox and Chrome.
+	Microsoft Internet Explorer and Microsoft Edge browser is NOT supported.
+	Please let me know of other system incompatibilities.
+
+Problem: Windows SmartScreen / Defender / Antivirus prevents the program from running.
+Solution:
+	For Windows SmartScreen, click "More info", and then click "Run anyway".
+	For other Defender / Antivirus software, try to add the program to the exception list.
+
+Problem: Missing "VCRUNTIME140.dll" or similar.
+Solution:
+	Install "Microsoft Visual C++ Redistributable 2015". 
+	Download link: https://www.microsoft.com/en-us/download/details.aspx?id=48145
+
+	Note: If computer is locked (prevented from installing software), try to download the dll directly and place it next to the .exe file.
+	(This is not recommended!)
+	Link: https://www.dllme.com/dll/files/vcruntime140_dll.html
+
+	Note: There are multiple versions of Microsoft Visual C++ Redistributable. Try other versions if the 2015 doesn't work.
+	Link: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
+
+Problem: Multiple instances of the program running at once.
+Solution:
+	Make sure only one instance of the program is running at the same time.
+	Multiple instances may conflict with each other.

@@ -8,3 +8,5 @@ output*.csv
 # Rust
 /target
 **/*.rs.bk
+
+dist/

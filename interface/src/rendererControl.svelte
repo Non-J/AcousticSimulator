@@ -93,34 +93,15 @@
       side: THREE.DoubleSide
     });
 
-    let simualtionRegiongeometry = new THREE.BoxGeometry(
-      Math.abs(
-        config["simulation_geometry"]["end"][0] -
-          config["simulation_geometry"]["begin"][0]
-      ) + Number.MIN_VALUE,
-      Math.abs(
-        config["simulation_geometry"]["end"][1] -
-          config["simulation_geometry"]["begin"][1]
-      ) + Number.MIN_VALUE,
-      Math.abs(
-        config["simulation_geometry"]["end"][2] -
-          config["simulation_geometry"]["begin"][2]
-      ) + Number.MIN_VALUE
+    let simulationRegionGeometry = new THREE.BoxGeometry(
+      ...config["simulation_geometry"].cubicSize
     );
     simulationRegionMesh = new THREE.Mesh(
-      simualtionRegiongeometry,
+      simulationRegionGeometry,
       simulationRegionmaterial
     );
     simulationRegionMesh.position.set(
-      (config["simulation_geometry"]["end"][0] +
-        config["simulation_geometry"]["begin"][0]) /
-        2,
-      (config["simulation_geometry"]["end"][1] +
-        config["simulation_geometry"]["begin"][1]) /
-        2,
-      (config["simulation_geometry"]["end"][2] +
-        config["simulation_geometry"]["begin"][2]) /
-        2
+      ...config["simulation_geometry"].cubicPosition
     );
 
     // First, remove the existing mesh

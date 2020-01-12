@@ -4,8 +4,12 @@
     flag_renderSimulationRegion
   } from "./store.js";
 
+  import * as utils from "./utils.js";
+
   let runningSimulation = false;
   let errorReport = "Loading...";
+
+  // inputData is an object that is binded to the input form
   let inputData = {};
 
   function toggleSimulationRegionDisplay() {
@@ -25,72 +29,23 @@
   }
 
   setTimeout(() => {
-    inputData = {
-      plane: $simulationConfiguration["simulation_geometry"]["plane"],
-      begin_x: $simulationConfiguration["simulation_geometry"]["begin"][0],
-      begin_y: $simulationConfiguration["simulation_geometry"]["begin"][1],
-      begin_z: $simulationConfiguration["simulation_geometry"]["begin"][2],
-      end_x: $simulationConfiguration["simulation_geometry"]["end"][0],
-      end_y: $simulationConfiguration["simulation_geometry"]["end"][1],
-      end_z: $simulationConfiguration["simulation_geometry"]["end"][2],
-      cnt_x: $simulationConfiguration["simulation_geometry"]["division"][0],
-      cnt_y: $simulationConfiguration["simulation_geometry"]["division"][1],
-      cnt_z: $simulationConfiguration["simulation_geometry"]["division"][2]
-    };
+    inputData = $simulationConfiguration["simulation_geometry"].flatData;
     errorReport = "";
   }, 1000);
 
   $: {
-    if (Number.isNaN(Number(inputData["begin_x"]))) {
-      errorReport = "Begin X is not a valid number.";
-    } else if (Number.isNaN(Number(inputData["begin_y"]))) {
-      errorReport = "Begin Y is not a valid number.";
-    } else if (Number.isNaN(Number(inputData["begin_z"]))) {
-      errorReport = "Begin Z is not a valid number.";
-    } else if (Number.isNaN(Number(inputData["end_x"]))) {
-      errorReport = "End X is not a valid number.";
-    } else if (Number.isNaN(Number(inputData["end_y"]))) {
-      errorReport = "End Y is not a valid number.";
-    } else if (Number.isNaN(Number(inputData["end_z"]))) {
-      errorReport = "End Z is not a valid number.";
-    } else if (
-      !Number.isInteger(Number(inputData["cnt_x"])) ||
-      Number(inputData["cnt_x"]) < 1
-    ) {
-      errorReport = "Division X is not a valid number or is not an integer.";
-    } else if (
-      !Number.isInteger(Number(inputData["cnt_y"])) ||
-      Number(inputData["cnt_y"]) < 1
-    ) {
-      errorReport = "Division Y is not a valid number or is not an integer.";
-    } else if (
-      !Number.isInteger(Number(inputData["cnt_z"])) ||
-      Number(inputData["cnt_z"]) < 1
-    ) {
-      errorReport = "Division Z is not a valid number or is not an integer.";
-    } else {
+    let newSimulationGeometry = utils.SimulationGeometry.fromFlatData(
+      inputData
+    ).validate();
+
+    if (newSimulationGeometry.isOk) {
       errorReport = "";
       simulationConfiguration.set({
         ...$simulationConfiguration,
-        simulation_geometry: {
-          plane: inputData["plane"],
-          begin: [
-            Number(inputData["begin_x"]),
-            Number(inputData["begin_y"]),
-            Number(inputData["begin_z"])
-          ],
-          end: [
-            Number(inputData["end_x"]),
-            Number(inputData["end_y"]),
-            Number(inputData["end_z"])
-          ],
-          division: [
-            Number(inputData["cnt_x"]),
-            Number(inputData["cnt_y"]),
-            Number(inputData["cnt_z"])
-          ]
-        }
+        simulation_geometry: newSimulationGeometry.unwrap()
       });
+    } else {
+      errorReport = "Invalid Geometry";
     }
   }
 </script>
@@ -162,11 +117,11 @@
     End Z:
     <input id="end_z" bind:value={inputData['end_z']} />
     Division X:
-    <input id="cnt_x" bind:value={inputData['cnt_x']} />
+    <input id="division_x" bind:value={inputData['division_x']} />
     Division Y:
-    <input id="cnt_y" bind:value={inputData['cnt_y']} />
+    <input id="division_y" bind:value={inputData['division_y']} />
     DIvision Z:
-    <input id="cnt_z" bind:value={inputData['cnt_z']} />
+    <input id="division_z" bind:value={inputData['division_z']} />
     <br />
   </span>
 

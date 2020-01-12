@@ -4,17 +4,14 @@ import {
 	get
 } from 'svelte/store'
 
+import * as utils from "./utils.js";
+
 export const flag_renderSimulationRegion = writable(false);
 export const flag_simulationConfiguration_ServerUpdateLock = writable(true);
 
 export const simulationConfiguration = writable({
 	"transducers": [],
-	"simulation_geometry": {
-		"plane": "X",
-		"begin": [0, 0, 0],
-		"end": [0, 0, 0],
-		"division": [1, 1, 1]
-	}
+	"simulation_geometry": new utils.SimulationGeometry(),
 });
 
 export const fetchSimulationConfigurationFromServer = () => {
@@ -24,7 +21,14 @@ export const fetchSimulationConfigurationFromServer = () => {
 			return response.json();
 		})
 		.then((value) => {
-			simulationConfiguration.set(value);
+			let transducers = [];
+			value['transducers'].forEach((transducer) => {
+				transducers.push(utils.Transducer.from(transducer));
+			});
+			simulationConfiguration.set({
+				'transducers': transducers,
+				'simulation_geometry': utils.SimulationGeometry.from(value['simulation_geometry']),
+			});
 			flag_simulationConfiguration_ServerUpdateLock.set(false);
 		});
 }
@@ -38,6 +42,10 @@ simulationConfiguration.subscribe(value => {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(value),
+			}).then((response) => {
+				if (!response.ok) {
+					alert("Saving Failed. Make sure that the simulation configuration is valid and reasonable.")
+				}
 			})
 			.catch(error => console.error(error));
 	}
