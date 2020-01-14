@@ -1,7 +1,16 @@
+This is the instructions on how to use this program.
+
+These instructions are made for the distributed version. 
+These instructions are not suitable for development builds.
+
+* PLEASE FOLLOW THE INSTRUCTIONS CAREFULLY. NOT DOING SO MAY RESULT IN UNWANTED BEHAVIOR *
+* IF AN ERROR OCCURED, PLEASE CONSULT WITH LIST OF POTENTIAL SOLUTIONS INCLUDED IN THIS FILE *
+
+Getting Started:
+
 1) Extract zip file into a folder. (Important!)
 2) Run "acoustic_simulator.exe".
-3) Follow the further instructions shown on the program window.
-4) Open the interface in web browser. Use the URL "http://localhost:1200" (Without quotation marks)
+4) Open the interface in web browser by using the URL "http://localhost:1200" (Without quotation marks)
 5) There are further instructions inside the interface.
 
 
@@ -28,15 +37,36 @@ Solution:
 
 Problem: Missing "VCRUNTIME140.dll" or similar.
 Solution:
-	Install "Microsoft Visual C++ Redistributable 2015". 
-	Download link: https://www.microsoft.com/en-us/download/details.aspx?id=48145
+	Install "Microsoft Visual C++ Redistributable". Version 2015, 2017, and 2019 should all work.
+	Download link: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
 
 	Note: If computer is locked (prevented from installing software), try to download the dll directly and place it next to the .exe file.
 	(This is not recommended!)
 	Link: https://www.dllme.com/dll/files/vcruntime140_dll.html
 
-	Note: There are multiple versions of Microsoft Visual C++ Redistributable. Try other versions if the 2015 doesn't work.
-	Link: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
+Problem: "The system cannot find the path specified"
+Solution:
+	There is many cause for this error. Try the following:
+	1) Make sure the files are extracted completely.
+	2) Make sure the program has the permission to access the file. 
+		Most likely Windows or antivirus software restricted the program from accessing the files.
+	3) Windows has a bug where it cannot read files if the path is longer than 260 characters.
+		Try to move the program folder to your Desktop and make sure your folder names are not too long.
+
+	* VERY IMPORTANT. IF YOU IGNORE THIS, THE PROGRAM WILL NOT RUN !!! *
+	4) EXTRACT THE FILE FROM THE ZIP FILE. DO NOT RUN THE PROGRAM DIRECTLY. 
+		Tutorial Here: https://lmgtfy.com/?q=How+to+extract+zip+files&iie=1
+		7-zip is a FREE zip extractor. USE IT: https://www.7-zip.org
+
+Problem: Stuck on "The app should start soon..." screen.
+Solution:
+	If the screen is shown for longer than 10 seconds, please try the following:
+
+	Use the LATEST VERSION of FIREFOX or GOOGLE CHROME.
+	Download Link: https://www.google.com/chrome
+
+	DO NOT launch "index.html" directly. 
+	Please refers to the "Getting Started" instructions on how to start the program correctly.
 
 Problem: Multiple instances of the program running at once.
 Solution:

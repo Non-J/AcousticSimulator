@@ -66,7 +66,7 @@ export function parseNumber(value) {
 }
 
 export function vectorStringToNumber(value) {
-	if (value) {
+	if (Array.isArray(value)) {
 		let result = value.map(i => Number(i));
 		for (let i of result) {
 			if (Number.isNaN(i)) {
