@@ -77,7 +77,7 @@ pub async fn compute_and_export(config: &data_structures::ConfigPacket) -> Resul
         .for_each(
             |axis_0: i64| {
                 // Computation of 2D Vec result
-                let result: Vec<Vec<f64>> =
+                let result: Vec<Vec<ComplexF64>> =
                     (0..axis_count.1).into_iter()
                         .map(
                             |axis_1: i64| {
@@ -93,7 +93,7 @@ pub async fn compute_and_export(config: &data_structures::ConfigPacket) -> Resul
                                             config.transducers.iter()
                                                 .fold(ComplexF64::rect(0.0, 0.0), |acc, val: &data_structures::Transducer| {
                                                     acc.add(&compute_point_pressure(&point, &val))
-                                                }).abs()
+                                                })
                                         }
                                     )
                                     .collect()
@@ -101,17 +101,63 @@ pub async fn compute_and_export(config: &data_structures::ConfigPacket) -> Resul
                         )
                         .collect();
 
+                let result_abs = result.iter().map(
+                    |row| {
+                        row.iter().map(|value| {
+                            value.abs()
+                        }).collect()
+                    }
+                ).collect();
+
+                let result_real = result.iter().map(
+                    |row| {
+                        row.iter().map(|value| {
+                            value.dat[0]
+                        }).collect()
+                    }
+                ).collect();
+
+                let result_imag = result.iter().map(
+                    |row| {
+                        row.iter().map(|value| {
+                            value.dat[1]
+                        }).collect()
+                    }
+                ).collect();
+
                 // Output
                 export_output(
-                    format!("output{}_{}{}.csv", output_id, config.simulation_geometry.plane, axis_0).as_str(),
-                    format!("Plane {} = {}, Row-Column Axis: {}", config.simulation_geometry.plane, compute_linear_sampling(axis_0 as u64, 0, (axis_count.0 - 1) as u64, axis_begin.0, axis_end.0),
+                    format!("outputabs{}_{}{}.csv", output_id, config.simulation_geometry.plane, axis_0).as_str(),
+                    format!("Absolute Output, Plane {} = {}, Row-Column Axis: {}", config.simulation_geometry.plane, compute_linear_sampling(axis_0 as u64, 0, (axis_count.0 - 1) as u64, axis_begin.0, axis_end.0),
                             match config.simulation_geometry.plane {
                                 'X' => "Y-Z",
                                 'Y' => "X-Z",
                                 'Z' => "Y-X",
                                 _ => "Axis Mismatched!"
                             }).as_str(),
-                    &result);
+                    &result_abs);
+
+                export_output(
+                    format!("outputreal{}_{}{}.csv", output_id, config.simulation_geometry.plane, axis_0).as_str(),
+                    format!("Real Value Output, Plane {} = {}, Row-Column Axis: {}", config.simulation_geometry.plane, compute_linear_sampling(axis_0 as u64, 0, (axis_count.0 - 1) as u64, axis_begin.0, axis_end.0),
+                            match config.simulation_geometry.plane {
+                                'X' => "Y-Z",
+                                'Y' => "X-Z",
+                                'Z' => "Y-X",
+                                _ => "Axis Mismatched!"
+                            }).as_str(),
+                    &result_real);
+
+                export_output(
+                    format!("outputimag{}_{}{}.csv", output_id, config.simulation_geometry.plane, axis_0).as_str(),
+                    format!("Imaginary Value Output,Plane {} = {}, Row-Column Axis: {}", config.simulation_geometry.plane, compute_linear_sampling(axis_0 as u64, 0, (axis_count.0 - 1) as u64, axis_begin.0, axis_end.0),
+                            match config.simulation_geometry.plane {
+                                'X' => "Y-Z",
+                                'Y' => "X-Z",
+                                'Z' => "Y-X",
+                                _ => "Axis Mismatched!"
+                            }).as_str(),
+                    &result_imag);
             }
         );
 

@@ -110,17 +110,17 @@ export class Transducer {
 
 	set tableRowData(value) {
 		this.id = value['id'] || this.id;
-		this.position[0] = Number(value['position_x']) || this.position[0];
-		this.position[1] = Number(value['position_y']) || this.position[1];
-		this.position[2] = Number(value['position_z']) || this.position[2];
-		this.target[0] = Number(value['target_x']) || this.target[0];
-		this.target[1] = Number(value['target_y']) || this.target[1];
-		this.target[2] = Number(value['target_z']) || this.target[2];
-		this.radius = Number(value['radius']) || this.radius;
-		this.phase_shift = Number(value['phase_shift']) || this.phase_shift;
-		this.loss_factor = Number(value['loss_factor']) || this.loss_factor;
-		this.output_power = Number(value['output_power']) || this.output_power;
-		this.wavelength = Number(value['wavelength']) || this.wavelength;
+		this.position[0] = parseNumber(value['position_x']).unwrap_or(this.position[0]);
+		this.position[1] = parseNumber(value['position_y']).unwrap_or(this.position[1]);
+		this.position[2] = parseNumber(value['position_z']).unwrap_or(this.position[2]);
+		this.target[0] = parseNumber(value['target_x']).unwrap_or(this.target[0]);
+		this.target[1] = parseNumber(value['target_y']).unwrap_or(this.target[1]);
+		this.target[2] = parseNumber(value['target_z']).unwrap_or(this.target[2]);
+		this.radius = parseNumber(value['radius']).unwrap_or(this.radius);
+		this.phase_shift = parseNumber(value['phase_shift']).unwrap_or(this.phase_shift);
+		this.loss_factor = parseNumber(value['loss_factor']).unwrap_or(this.loss_factor);
+		this.output_power = parseNumber(value['output_power']).unwrap_or(this.output_power);
+		this.wavelength = parseNumber(value['wavelength']).unwrap_or(this.wavelength);
 	}
 
 	get data() {
@@ -140,11 +140,11 @@ export class Transducer {
 		this.id = value['id'] || this.id;
 		this.position = vectorStringToNumber(value['position']) || this.position;
 		this.target = vectorStringToNumber(value['target']) || this.target;
-		this.radius = Number(value['radius']) || this.radius;
-		this.phase_shift = Number(value['phase_shift']) || this.phase_shift;
-		this.loss_factor = Number(value['loss_factor']) || this.loss_factor;
-		this.output_power = Number(value['output_power']) || this.output_power;
-		this.wavelength = Number(value['wavelength']) || this.wavelength;
+		this.radius = parseNumber(value['radius']).unwrap_or(this.radius);
+		this.phase_shift = parseNumber(value['phase_shift']).unwrap_or(this.phase_shift);
+		this.loss_factor = parseNumber(value['loss_factor']).unwrap_or(this.loss_factor);
+		this.output_power = parseNumber(value['output_power']).unwrap_or(this.output_power);
+		this.wavelength = parseNumber(value['wavelength']).unwrap_or(this.wavelength);
 	}
 
 	static from(value) {
@@ -190,15 +190,15 @@ export class SimulationGeometry {
 
 	set flatData(value) {
 		this.plane = value['plane'] || this.plane;
-		this.begin[0] = Number(value['begin_x']) || this.begin[0];
-		this.begin[1] = Number(value['begin_y']) || this.begin[1];
-		this.begin[2] = Number(value['begin_z']) || this.begin[2];
-		this.end[0] = Number(value['end_x']) || this.end[0];
-		this.end[1] = Number(value['end_y']) || this.end[1];
-		this.end[2] = Number(value['end_z']) || this.end[2];
-		this.division[0] = Number(value['division_x']) || this.division[0];
-		this.division[1] = Number(value['division_y']) || this.division[1];
-		this.division[2] = Number(value['division_z']) || this.division[2];
+		this.begin[0] = parseNumber(value['begin_x']).unwrap_or(this.begin[0]);
+		this.begin[1] = parseNumber(value['begin_y']).unwrap_or(this.begin[1]);
+		this.begin[2] = parseNumber(value['begin_z']).unwrap_or(this.begin[2]);
+		this.end[0] = parseNumber(value['end_x']).unwrap_or(this.end[0]);
+		this.end[1] = parseNumber(value['end_y']).unwrap_or(this.end[1]);
+		this.end[2] = parseNumber(value['end_z']).unwrap_or(this.end[2]);
+		this.division[0] = parseNumber(value['division_x']).unwrap_or(this.division[0]);
+		this.division[1] = parseNumber(value['division_y']).unwrap_or(this.division[1]);
+		this.division[2] = parseNumber(value['division_z']).unwrap_or(this.division[2]);
 	}
 
 

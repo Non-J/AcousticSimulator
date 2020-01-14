@@ -161,8 +161,10 @@
     let selected = table.getSelectedData();
     for (let i = 0; i < tableData.length; i++) {
       if (
-        find(selected, (val, idx, col) => isEqual(val, tableData[i])) !==
-        undefined
+        find(
+          selected,
+          (val, idx, col) => val["row_id"] === tableData[i]["row_id"]
+        ) !== undefined
       ) {
         tableData.splice(i, 1);
         i--;
@@ -174,6 +176,12 @@
     let selected = table.getSelectedData();
 
     let editFields = [
+      "position_x",
+      "position_y",
+      "position_z",
+      "target_x",
+      "target_y",
+      "target_z",
       "radius",
       "phase_shift",
       "loss_factor",
@@ -204,12 +212,22 @@
   }
 </script>
 
-<link href="tabulator.min.css" rel="stylesheet" />
+<style>
+  .container {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+  }
+</style>
 
+<link href="tabulator.min.css" rel="stylesheet" />
 <svelte:options tag="transducers-control" />
-<button on:click={saveTransducers}>Save Transducers</button>
-<button on:click={addTransducers}>Add Transducers</button>
-<button on:click={removeTransducers}>Remove Selected Transducers</button>
-<button on:click={multieditor}>Multi Edit</button>
-<div id="transducers-table" bind:this={tableTarget} />
+
+<div class="container">
+  <button on:click={saveTransducers}>Save Transducers</button>
+  <button on:click={addTransducers}>Add Transducers</button>
+  <button on:click={removeTransducers}>Remove Selected Transducers</button>
+  <button on:click={multieditor}>Multi Edit</button>
+  <div id="transducers-table" bind:this={tableTarget} />
+</div>
 <slot />
