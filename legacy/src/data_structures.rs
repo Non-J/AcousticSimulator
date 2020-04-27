@@ -19,7 +19,9 @@ pub struct SimulationGeometry {
     pub plane: char,
     pub begin: (f64, f64, f64),
     pub end: (f64, f64, f64),
-    pub division: (i64, i64, i64),
+    pub cell_size: f64,
+    pub potential_compute_const_1: f64,
+    pub potential_compute_const_2: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,7 +38,9 @@ impl ConfigPacket {
                 plane: 'X',
                 begin: (0.0, 0.0, 0.0),
                 end: (0.0, 0.0, 0.0),
-                division: (1, 1, 1),
+                cell_size: 0.01,
+                potential_compute_const_1: 1.0,
+                potential_compute_const_2: 1.0,
             },
         }
     }
@@ -62,9 +66,7 @@ impl ConfigPacket {
             _ => return false,
         }
 
-        if self.simulation_geometry.division.0 < 1 ||
-            self.simulation_geometry.division.1 < 1 ||
-            self.simulation_geometry.division.2 < 1 {
+        if self.simulation_geometry.cell_size <= 0.0 {
             return false;
         }
 
@@ -77,7 +79,7 @@ impl ConfigPacket {
 
             if transducer.radius <= 0.0 || transducer.wavelength <= 0.0 ||
                 transducer.loss_factor > 1.0 || transducer.loss_factor < 0.0 ||
-                transducer.output_power > 1.0 || transducer.output_power < 0.0 {
+                transducer.output_power < 0.0 {
                 return false;
             }
         }

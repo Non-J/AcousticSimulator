@@ -142,14 +142,29 @@
   });
 
   function saveTransducers() {
+    let saveFlag = true;
     let result = [];
+
     tableData.forEach(row => {
-      result.push(utils.Transducer.fromTableRowData(row));
+      if (!saveFlag) {
+        return;
+      }
+
+      let newTransducer = utils.Transducer.fromTableRowData(row).validate();
+      if (newTransducer.isOk) {
+        result.push(newTransducer.unwrap());
+      } else {
+        alert(`Invalid Transducer ${row.id}: ${newTransducer.value}`);
+        saveFlag = false;
+      }
     });
-    simulationConfiguration.set({
-      ...$simulationConfiguration,
-      transducers: result
-    });
+
+    if (saveFlag) {
+      simulationConfiguration.set({
+        ...$simulationConfiguration,
+        transducers: result
+      });
+    }
   }
 
   function addTransducers() {

@@ -160,8 +160,16 @@ export class Transducer {
 	}
 
 	validate() {
-		// TODO: Implement
-		return true;
+		if (!Array.isArray(this.position) || this.position.length !== 3 || !Array.isArray(this.target) || this.target.length !== 3) {
+			return new Result(false, "Dimension Mismatched");
+		}
+		if (this.position[0] === this.target[0] && this.position[1] === this.target[1] && this.position[2] === this.target[2]) {
+			return new Result(false, "Position and Target is the same coordinate");
+		}
+		if (this.radius < 0 || this.loss_factor < 0 || this.loss_factor > 1 || this.output_power < 0 || this.wavelength < 0) {
+			return new Result(false, "Value is not in acceptable range");
+		}
+		return new Result(true, this);
 	}
 }
 
@@ -170,7 +178,9 @@ export class SimulationGeometry {
 		this.plane = "X";
 		this.begin = [-10, 0, -10];
 		this.end = [10, 0, 10];
-		this.division = [250, 1, 250];
+		this.cell_size = 0.01;
+		this.potential_compute_const_1 = 1;
+		this.potential_compute_const_2 = 1;
 	}
 
 	get flatData() {
@@ -182,9 +192,9 @@ export class SimulationGeometry {
 			end_x: this.end[0],
 			end_y: this.end[1],
 			end_z: this.end[2],
-			division_x: this.division[0],
-			division_y: this.division[1],
-			division_z: this.division[2],
+			cell_size: this.cell_size,
+			potential_compute_const_1: this.potential_compute_const_1,
+			potential_compute_const_2: this.potential_compute_const_2,
 		}
 	}
 
@@ -196,9 +206,9 @@ export class SimulationGeometry {
 		this.end[0] = parseNumber(value['end_x']).unwrap_or(this.end[0]);
 		this.end[1] = parseNumber(value['end_y']).unwrap_or(this.end[1]);
 		this.end[2] = parseNumber(value['end_z']).unwrap_or(this.end[2]);
-		this.division[0] = parseNumber(value['division_x']).unwrap_or(this.division[0]);
-		this.division[1] = parseNumber(value['division_y']).unwrap_or(this.division[1]);
-		this.division[2] = parseNumber(value['division_z']).unwrap_or(this.division[2]);
+		this.cell_size = parseNumber(value['cell_size']).unwrap_or(this.cell_size);
+		this.potential_compute_const_1 = parseNumber(value['potential_compute_const_1']).unwrap_or(this.cell_size);
+		this.potential_compute_const_2 = parseNumber(value['potential_compute_const_2']).unwrap_or(this.cell_size);
 	}
 
 
@@ -207,7 +217,9 @@ export class SimulationGeometry {
 			plane: this.plane,
 			begin: this.begin,
 			end: this.end,
-			division: this.division,
+			cell_size: this.cell_size,
+			potential_compute_const_1: this.potential_compute_const_1,
+			potential_compute_const_2: this.potential_compute_const_2,
 		}
 	}
 
@@ -215,7 +227,9 @@ export class SimulationGeometry {
 		this.plane = value['plane'] || this.plane;
 		this.begin = vectorStringToNumber(value['begin']) || this.begin;
 		this.end = vectorStringToNumber(value['end']) || this.end;
-		this.division = vectorStringToNumber(value['division']) || this.division;
+		this.cell_size = parseNumber(value['division']).unwrap_or(this.cell_size);
+		this.potential_compute_const_1 = parseNumber(value['potential_compute_const_1']).unwrap_or(this.cell_size);
+		this.potential_compute_const_2 = parseNumber(value['potential_compute_const_2']).unwrap_or(this.cell_size);
 	}
 
 	static from(value) {
@@ -248,7 +262,12 @@ export class SimulationGeometry {
 	}
 
 	validate() {
-		// TODO: Implement
+		if (["X", "Y", "Z"].indexOf(this.plane) === -1) {
+			return new Result(false, "Invalid Plane");
+		}
+		if (this.cell_size <= 0) {
+			return new Result(false, "Invalid Cell Size (Must be positive)");
+		}
 		return new Result(true, this);
 	}
 }

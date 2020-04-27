@@ -45,7 +45,7 @@
         simulation_geometry: newSimulationGeometry.unwrap()
       });
     } else {
-      errorReport = "Invalid Geometry";
+      errorReport = `Invalid Geometry: ${newSimulationGeometry.value}`;
     }
   }
 </script>
@@ -116,12 +116,16 @@
     <br />
     End Z:
     <input id="end_z" bind:value={inputData['end_z']} />
-    Division X:
-    <input id="division_x" bind:value={inputData['division_x']} />
-    Division Y:
-    <input id="division_y" bind:value={inputData['division_y']} />
-    DIvision Z:
-    <input id="division_z" bind:value={inputData['division_z']} />
+    Cell Size:
+    <input id="cell_size" bind:value={inputData['cell_size']} />
+    Potential Compute Constant 1 (K1):
+    <input
+      id="potential_compute_const_1"
+      bind:value={inputData['potential_compute_const_1']} />
+    Potential Compute Constant 2 (K2):
+    <input
+      id="potential_compute_const_2"
+      bind:value={inputData['potential_compute_const_2']} />
     <br />
   </span>
 

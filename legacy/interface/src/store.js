@@ -33,6 +33,22 @@ export const fetchSimulationConfigurationFromServer = () => {
 		});
 }
 
+let displaySaveErrorFlag = true;
+let displaySaveErrorTimeout;
+
+function displaySaveError(message, timeout = 5000) {
+	if (displaySaveErrorFlag) {
+		alert(message);
+		displaySaveErrorFlag = false;
+		if (!displaySaveErrorTimeout) {
+			displaySaveErrorTimeout = setTimeout(() => {
+				displaySaveErrorFlag = true;
+				displaySaveErrorTimeout = null;
+			}, timeout);
+		}
+	}
+}
+
 fetchSimulationConfigurationFromServer();
 simulationConfiguration.subscribe(value => {
 	if (!get(flag_simulationConfiguration_ServerUpdateLock)) {
@@ -44,9 +60,9 @@ simulationConfiguration.subscribe(value => {
 				body: JSON.stringify(value),
 			}).then((response) => {
 				if (!response.ok) {
-					alert("Saving Failed. Make sure that the simulation configuration is valid and reasonable.")
+					displaySaveError("Saving Configuration Failed.")
 				}
 			})
-			.catch(error => console.error(error));
+			.catch(error => alert(`${error}`));
 	}
 });
