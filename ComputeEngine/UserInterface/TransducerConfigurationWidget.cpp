@@ -1,3 +1,4 @@
+#include <fmt/format.h>
 #include <imgui.h>
 #include "../DataStore.h"
 #include "../SourceConfig.h"
@@ -6,36 +7,75 @@
 
 void UserInterface::TransducerConfigurationWidget(
     DataStore::GlobalDataStore& global_data_store) {
-  auto& tc_ui = global_data_store.transducer_configuration_ui;
-
-  auto windowConfig = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
+  auto window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
   ImGui::Begin("Transducer Configuration",
-               &global_data_store.toolbox_open.TransducerConfiguration, windowConfig);
+               &global_data_store.toolbox_open.TransducerConfiguration, window_flags);
 
-  ImGui::Text("Paste Transducer Configuration Data: ");
-  ImGui::InputTextMultiline("Data Input", &tc_ui.user_input_text, ImVec2(350.0, 150.0));
-  auto textPasted = ImGui::Button("Paste");
+  // User Input
+  ImGui::TextUnformatted("Transducer configuration data");
+  static auto user_input_text = std::string();
+  auto input =
+      ImGui::InputTextMultiline("##DataInput", &user_input_text, ImVec2(350.0, 150.0));
+  auto pasted = ImGui::Button("Paste");
+
   ImGui::Separator();
 
-  if (textPasted) {
-    tc_ui.user_input_text = std::string{ImGui::GetClipboardText()};
+  static auto parse_text_success = false;
+  static auto parse_text_result = std::string();
+
+  // User Input logic
+  if (pasted or input) {
+    if (pasted) {
+      user_input_text = std::string{ImGui::GetClipboardText()};
+    }
+
+    // Parsing logic
+    try {
+      if (user_input_text.empty()) {
+        throw std::exception("Input is empty");
+      }
+
+      const auto parsedResult = nlohmann::json::parse(user_input_text);
+
+      if (not parsedResult.is_array()) {
+        throw std::exception("Input root is not an array");
+      }
+
+      auto& transducers = global_data_store.simulation_data.transducers;
+      transducers.clear();
+
+      for (const auto& item : parsedResult) {
+        auto parsedItem = DataStore::JSONConvert::to_transducer(item);
+
+        const auto invalidParameter = parsedItem.checkInvalidParameter();
+        if (not invalidParameter.empty()) {
+          throw std::exception(
+              fmt::format(
+                  FMT_STRING("Transducer '{:s}' has an invalid parameter: {:s}"),
+                  parsedItem.id, invalidParameter)
+                  .c_str());
+        }
+
+        transducers.push_back(std::move(parsedItem));
+      }
+
+      parse_text_success = true;
+      parse_text_result =
+          fmt::format(FMT_STRING("Transducer count: {:d}"), transducers.size());
+    } catch (const std::exception& e) {
+      parse_text_success = false;
+      parse_text_result = e.what();
+    }
   }
 
-  if (textPasted or tc_ui.last_text_size != tc_ui.user_input_text.size()) {
-    tc_ui.last_text_size = tc_ui.user_input_text.size();
-    tc_ui.parse_text_attempted = false;
-    tc_ui.parse_text_success = false;
-  }
-
-  if (tc_ui.parse_text_success) {
-    ImGui::TextColored(Colors::green400, "Transducer Configuration Loaded");
+  // Display Result
+  if (parse_text_success) {
+    ImGui::TextColored(Colors::green400, "Transducer configuration loaded");
   } else {
-    ImGui::TextColored(Colors::amber400, "Transducer Configuration NOT Loaded");
+    ImGui::TextColored(Colors::amber400, "Transducer configuration NOT loaded");
   }
-
-  ImGui::Separator();
   ImGui::PushTextWrapPos(350.0);
-  ImGui::TextUnformatted(tc_ui.parse_text_result.c_str());
+  ImGui::TextUnformatted(parse_text_result.c_str());
   ImGui::PopTextWrapPos();
 
   ImGui::End();

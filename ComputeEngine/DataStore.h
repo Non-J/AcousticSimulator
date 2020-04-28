@@ -2,7 +2,6 @@
 #define ACOUSTICSIMULATOR_DATASTORE_H
 
 #include <nlohmann/json.hpp>
-#include <string>
 #include <vector>
 #include "Simulator.h"
 
@@ -12,30 +11,36 @@ namespace DataStore {
 struct ToolboxOpen {
   bool ImGuiDemo = false;
   bool TransducerConfiguration = true;
-};
-
-// Store UI data for Transducer Configuration Widget
-struct TransducerConfigurationUI {
-  std::string user_input_text;
-  std::size_t last_text_size;
-  bool parse_text_attempted;
-  bool parse_text_success;
-  std::string parse_text_result;
+  bool SimulationControl = true;
+  bool BenchmarkingWidget = false;
 };
 
 // Store data for Simulation
-struct SimulationData {
+struct SimulationConfiguration {
   std::vector<Simulator::Transducer> transducers;
+  Simulator::SimulationParameter simulation_parameter;
 };
 
 // Structure for passing around
 struct GlobalDataStore {
   ToolboxOpen toolbox_open;
-  TransducerConfigurationUI transducer_configuration_ui;
-  SimulationData simulation_data;
+  SimulationConfiguration simulation_data;
 };
 
-void ControlLoop(GlobalDataStore& global_data_store);
+namespace JSONConvert {
+
+[[nodiscard]] Simulator::Vec3 to_vec3(const nlohmann::json& json);
+[[nodiscard]] nlohmann::json from_vec3(const Simulator::Vec3& vec3);
+
+[[nodiscard]] Simulator::Transducer to_transducer(const nlohmann::json& json);
+[[nodiscard]] nlohmann::json from_transducer(const Simulator::Transducer& transducer);
+
+[[nodiscard]] Simulator::SimulationParameter to_simulation_parameter(
+    const nlohmann::json& json);
+[[nodiscard]] nlohmann::json from_simulation_parameter(
+    const Simulator::SimulationParameter& simulation_parameter);
+
+}  // namespace JSONConvert
 
 }  // namespace DataStore
 

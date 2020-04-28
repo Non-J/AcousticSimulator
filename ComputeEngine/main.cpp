@@ -39,8 +39,12 @@ int main(int argc, char** argv) {
     if (global_data_store.toolbox_open.TransducerConfiguration) {
       UserInterface::TransducerConfigurationWidget(global_data_store);
     }
-
-    DataStore::ControlLoop(global_data_store);
+    if (global_data_store.toolbox_open.SimulationControl) {
+      UserInterface::SimulationControlWidget(global_data_store);
+    }
+    if (global_data_store.toolbox_open.BenchmarkingWidget) {
+      UserInterface::BenchmarkingWidget(global_data_store);
+    }
 
     window.clear();
     ImGui::SFML::Render(window);
