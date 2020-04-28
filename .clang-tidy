@@ -1,4 +1,17 @@
 ---
-Checks:          '*'
+Checks: >
+  -*,
+  bugprone-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -modernize-return-braced-init-list,
+  -performance-move-const-arg,
+  -readability-magic-numbers,
+  -readability-redundant-declaration,
+
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
