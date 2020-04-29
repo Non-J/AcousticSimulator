@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width,initial-scale=1'>
+
+	<title>Acoustic Simulator</title>
+
+	<link rel='stylesheet' href='static/global.css'>
+	<link rel='stylesheet' href='static/goldenlayout.css'>
+	<link rel='stylesheet' href='static/bundle.css'>
+
+	<script>
+		window.closeCompatWarning = () => {
+			document.getElementById("compat-warning").remove();
+		}
+
+		function compatibilityCheck() {
+			let compatCheck = document.getElementById("compat-self-check");
+			compatCheck.innerText += `Self-check loaded\n\n`;
+
+			let checksOk = true;
+
+			// Detect custom element API
+			if ("customElements" in window) {
+				compatCheck.innerText += `Passed: Custom Elements is supported\n\n`;
+			} else {
+				checksOk = false;
+				compatCheck.innerText += `Failed: Custom Elements is NOT supported\n\n`;
+			}
+
+			// Detect Permission and Clipboard API
+			if ("navigator" in window && "permissions" in navigator && "clipboard" in navigator) {
+				compatCheck.innerText += `Passed: Clipboard is supported\n\n`;
+			} else {
+				checksOk = false;
+				compatCheck.innerText += `Failed: Clipboard is NOT supported\n\n`;
+			}
+
+			// Detect webgl
+			let canvas = document.createElement("canvas");
+			let gl = canvas.getContext("webgl") ||
+				canvas.getContext("experimental-webgl");
+			if (gl && gl instanceof WebGLRenderingContext) {
+				compatCheck.innerText += `Passed: Web Graphics Library is supported\n\n`;
+			} else {
+				checksOk = false;
+				compatCheck.innerText += `Failed: Web Graphics Library is NOT supported\n\n`;
+			}
+
+
+			if (checksOk) {
+				window.closeCompatWarning();
+			} else {
+				compatCheck.innerText +=
+					`Hint: This app should work on the latest version of Google Chrome and Mozilla Firefox.\n\n`;
+			}
+		}
+
+		if (document.addEventListener) document.addEventListener("DOMContentLoaded", compatibilityCheck, false);
+		else if (document.attachEvent) document.attachEvent("onreadystatechange", compatibilityCheck);
+		else window.onload = compatibilityCheck;
+	</script>
+
+	<script defer src='static/bundle.js'></script>
+</head>
+
+<body>
+	<div id="compat-warning">
+		<h1>App is starting...</h1>
+		<pre id="compat-self-check"></pre>
+		<button onclick="closeCompatWarning()">Close Self-Check</button>
+	</div>
+	<span id="svelte-app"> </span>
+</body>
+
+</html>

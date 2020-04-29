@@ -33,7 +33,7 @@ void UserInterface::SimulationControlWidget(
   ImGui::TextUnformatted("Transducer frequency");
   input |= ImGui::InputDouble("##frequency", &sp.frequency, NULL, NULL, "%.3f Hz",
                               ImGuiInputTextFlags_CharsScientific);
-  ImGui::Text("Wavelength: %e mm", sp.wave_speed / sp.frequency * 1000.0);
+  ImGui::Text("Wavelength: %e m", sp.wave_speed / sp.frequency);
   ImGui::TextUnformatted("Particle radius");
   input |= ImGui::InputDouble("##particle_radius", &sp.particle_radius, NULL, NULL,
                               "%.3e m", ImGuiInputTextFlags_CharsScientific);
