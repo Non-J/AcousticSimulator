@@ -7,6 +7,11 @@ add_executable(ComputeEngine
         Simulator.h Simulator.cpp
         )
 
+target_link_libraries(ComputeEngine PRIVATE project_options project_warnings)
+
+find_package(OpenMP REQUIRED)
+target_link_libraries(ComputeEngine PRIVATE OpenMP::OpenMP_CXX)
+
 find_package(docopt CONFIG REQUIRED)
 target_link_libraries(ComputeEngine PRIVATE docopt_s)
 
@@ -27,6 +32,3 @@ target_link_libraries(ComputeEngine PRIVATE imgui::imgui)
 
 find_package(ImGui-SFML CONFIG REQUIRED)
 target_link_libraries(ComputeEngine PRIVATE ImGui-SFML::ImGui-SFML)
-
-find_package(OpenMP REQUIRED)
-target_link_libraries(ComputeEngine PRIVATE OpenMP::OpenMP_CXX)
