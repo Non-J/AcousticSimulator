@@ -3,8 +3,8 @@ add_executable(ComputeEngine
         imgui_stdlib/imgui_stdlib.cpp
         UserInterface/UserInterface.h UserInterface/MenuBar.cpp UserInterface/SetupStyle.cpp
         UserInterface/TransducerConfigurationWidget.cpp UserInterface/SimulationControlWidget.cpp
-        UserInterface/BenchmarkingWidget.cpp
-        Simulator.h Simulator.cpp
+        UserInterface/BenchmarkingWidget.cpp UserInterface/RunSimulationWidget.cpp
+        Computation/Simulator.h Computation/Simulator.cpp
         )
 
 target_link_libraries(ComputeEngine PRIVATE project_options project_warnings)

@@ -9,7 +9,8 @@ void UserInterface::TransducerConfigurationWidget(
     DataStore::GlobalDataStore& global_data_store) {
   auto window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
   ImGui::Begin("Transducer Configuration",
-               &global_data_store.toolbox_open.TransducerConfiguration, window_flags);
+               &global_data_store.toolbox_open.TransducerConfigurationWidget,
+               window_flags);
 
   // User Input
   ImGui::TextUnformatted("Transducer configuration data");

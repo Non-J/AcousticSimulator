@@ -4,7 +4,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
-
 #include "DataStore.h"
 #include "UserInterface/UserInterface.h"
 
@@ -36,11 +35,14 @@ int main(int argc, char** argv) {
     if (global_data_store.toolbox_open.ImGuiDemo) {
       ImGui::ShowDemoWindow(&global_data_store.toolbox_open.ImGuiDemo);
     }
-    if (global_data_store.toolbox_open.TransducerConfiguration) {
+    if (global_data_store.toolbox_open.TransducerConfigurationWidget) {
       UserInterface::TransducerConfigurationWidget(global_data_store);
     }
-    if (global_data_store.toolbox_open.SimulationControl) {
+    if (global_data_store.toolbox_open.SimulationControlWidget) {
       UserInterface::SimulationControlWidget(global_data_store);
+    }
+    if (global_data_store.toolbox_open.RunSimulationWidget) {
+      UserInterface::RunSimulationWidget(global_data_store);
     }
     if (global_data_store.toolbox_open.BenchmarkingWidget) {
       UserInterface::BenchmarkingWidget(global_data_store);

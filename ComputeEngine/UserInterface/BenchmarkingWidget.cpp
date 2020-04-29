@@ -26,23 +26,19 @@ void executeBenchmark(std::string* logs, bool* running) {
 
   // prevent compiler optimization
   volatile double result = 0;
-  for (auto i = 0; i < 10000000; ++i) {
+  for (auto i = 0; i < 25000000; ++i) {
     result += gsl_sf_bessel_J0(6.0);
-    if (result > 1000000) {
-      result = 0;
-    }
   }
-  log("10M sequential");
+  log("25M sequential gsl_sf_bessel_J0");
 
   result = 0;
 #pragma omp parallel for
-  for (auto i = 0; i < 50000000; ++i) {
-    result += gsl_sf_bessel_J0(6.0);
-    if (result > 1000000) {
-      result = 0;
-    }
+  for (auto i = 0; i < 25000000; ++i) {
+    const auto v = gsl_sf_bessel_J0(6.0);
+#pragma omp atomic
+    result += v;
   }
-  log("50M openmp parallel for");
+  log("25M openmp parallel for gsl_sf_bessel_J0");
 
   log("Done");
   *running = false;
@@ -60,13 +56,13 @@ void UserInterface::BenchmarkingWidget(DataStore::GlobalDataStore& global_data_s
 
   ImGui::TextUnformatted(version_information.c_str());
 
-  if (ImGui::Button("Run", ImVec2(250, 20)) and not benchmark_running) {
+  if (ImGui::Button("Run", ImVec2(400, 20)) and not benchmark_running) {
     benchmark_running = true;
-    std::thread thread(executeBenchmark, &benchmark_result, &benchmark_running);
+    auto thread = std::thread(executeBenchmark, &benchmark_result, &benchmark_running);
     thread.detach();
   }
 
-  ImGui::PushTextWrapPos(250);
+  ImGui::PushTextWrapPos(400);
   ImGui::TextUnformatted(benchmark_result.c_str());
   ImGui::PopTextWrapPos();
 

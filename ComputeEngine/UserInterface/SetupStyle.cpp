@@ -2,8 +2,7 @@
 #include <imgui.h>
 #include "UserInterface.h"
 
-
-//region StaticStyleData
+// region StaticStyleData
 static const unsigned int RobotoMedium_compressed_size = 115741;
 static const unsigned int RobotoMedium_compressed_data[115744 / 4] = {
     0x0000bc57, 0x00000000, 0x1c7b0200, 0x00000400, 0x00010025, 0x82110000, 0x042e0804,
@@ -4141,8 +4140,7 @@ static const unsigned int RobotoMedium_compressed_data[115744 / 4] = {
     0x024002dd, 0x0241023e, 0x043f0242, 0x205982e1, 0x24eb8c10, 0x001b001a, 0x2aef821c,
     0x024e004d, 0x039a03ad, 0x0519049c, 0x4bd158fa, 0x00000034,
 };
-//endregion
-
+// endregion
 
 void UserInterface::SetupStyle() {
   ImGuiIO& io = ImGui::GetIO();

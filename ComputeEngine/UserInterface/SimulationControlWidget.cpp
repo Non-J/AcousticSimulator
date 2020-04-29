@@ -7,8 +7,8 @@ void UserInterface::SimulationControlWidget(
   auto& sp = global_data_store.simulation_data.simulation_parameter;
 
   auto window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
-  ImGui::Begin("Simulation Control", &global_data_store.toolbox_open.SimulationControl,
-               window_flags);
+  ImGui::Begin("Simulation Control",
+               &global_data_store.toolbox_open.SimulationControlWidget, window_flags);
 
   // This marks if any input field changed
   auto input = false;
