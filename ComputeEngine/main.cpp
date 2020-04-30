@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   auto global_data_store = DataStore::GlobalDataStore();
 
   // Window Setup
-  auto window = sf::RenderWindow(sf::VideoMode(1200, 675), "Test");
+  auto window = sf::RenderWindow(sf::VideoMode(1200, 675), "ComputeEngine");
   window.setFramerateLimit(30);
   ImGui::SFML::Init(window);
   UserInterface::SetupStyle();

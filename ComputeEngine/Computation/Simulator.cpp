@@ -23,13 +23,19 @@ void CellBlock<T>::set_cell_by_id(std::size_t id, T value) {
 }
 
 template <typename T>
-Vec3<T> RealSpaceInterpolation<T>::get_vec3_by_id(std::size_t id) const {
-  const auto [x_idx, y_idx, z_idx] = map_id_to_index(id, x_size, y_size, z_size);
-  double x_pos = double(x_idx) / double(x_size);
-  double y_pos = double(y_idx) / double(y_size);
-  double z_pos = double(z_idx) / double(z_size);
-  return Vec3<T>{std::lerp(begin.x, end.x, x_pos), std::lerp(begin.y, end.y, y_pos),
-                 std::lerp(begin.z, end.z, z_pos)};
+Vec3<T> RealSpaceInterpolation<T>::get_real_vec(std::size_t id) const {
+  const auto pos =
+      get_int_vec(id).template cast<T>().elem_division(dimension_size.cast<T>());
+  return Vec3<T>{std::lerp(begin.x, end.x, pos.x), std::lerp(begin.y, end.y, pos.y),
+                 std::lerp(begin.z, end.z, pos.z)};
+}
+
+template <typename T>
+Vec3<std::size_t> RealSpaceInterpolation<T>::get_int_vec(std::size_t id) const {
+  const auto x_idx = (id / dimension_size.z / dimension_size.y) % dimension_size.x;
+  const auto y_idx = (id / dimension_size.z) % dimension_size.y;
+  const auto z_idx = id % dimension_size.z;
+  return Vec3<std::size_t>{x_idx, y_idx, z_idx};
 }
 
 // endregion
@@ -76,43 +82,28 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
                        Computation::SimulationParameter simulation_parameter) {
   // The size is computed based on cell_size
   // To allow for derivation, extra cells must be padded
-  const auto x_size =
-      std::size_t(abs(simulation_parameter.end.x - simulation_parameter.begin.x) /
-                  simulation_parameter.cell_size) +
+  const auto dimension_size =
+      ((simulation_parameter.end - simulation_parameter.begin).elem_abs() /
+       simulation_parameter.cell_size)
+          .cast<std::size_t>() +
       3;
-  const auto y_size =
-      std::size_t(abs(simulation_parameter.end.y - simulation_parameter.begin.y) /
-                  simulation_parameter.cell_size) +
-      3;
-  const auto z_size =
-      std::size_t(abs(simulation_parameter.end.z - simulation_parameter.begin.z) /
-                  simulation_parameter.cell_size) +
-      3;
-
-  // TODO: Expand Vec3 manipulation and refactor these
 
   // Shift by one cell (padding)
-  const auto space_begin =
-      Vec3<double>{simulation_parameter.begin.x - simulation_parameter.cell_size,
-                   simulation_parameter.begin.y - simulation_parameter.cell_size,
-                   simulation_parameter.begin.z - simulation_parameter.cell_size};
+  const auto space_begin = simulation_parameter.begin - simulation_parameter.cell_size;
   const auto space_end =
-      Vec3<double>{space_begin.x + simulation_parameter.cell_size * x_size,
-                   space_begin.y + simulation_parameter.cell_size * y_size,
-                   space_begin.z + simulation_parameter.cell_size * z_size};
+      space_begin + (dimension_size.cast<double>() * simulation_parameter.cell_size);
 
   const auto space_interpolation =
-      RealSpaceInterpolation<double>(x_size, y_size, z_size, space_begin, space_end);
-
-  auto test_cell_block = CellBlock<double>(x_size, y_size, z_size);
+      RealSpaceInterpolation<double>(dimension_size, space_begin, space_end);
+  auto test_cell_block = CellBlock<double>(dimension_size);
 
   /* OpenMP 2.0 (latest supported by MSVC) doesn't allow for unsigned loop counter
    * for some reason. Making this project works with clang-cl should resolve this. */
   // TODO: Upgrade OpenMP
   // TODO: Make this loop index by std::size_t (see comment)
 #pragma omp parallel for
-  for (int64_t id = 0; id < int64_t(x_size * y_size * z_size); ++id) {
-    test_cell_block.set_cell_by_id(id, space_interpolation.get_vec3_by_id(id).x);
+  for (int64_t id = 0; id < int64_t(dimension_size.product()); ++id) {
+    test_cell_block.set_cell_by_id(id, space_interpolation.get_real_vec(id).x);
   }
 
   auto output_dir = std::filesystem::current_path() / export_name;
