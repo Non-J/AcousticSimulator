@@ -3,12 +3,11 @@
 namespace DataStore::JSONConvert {
 
 template <typename T>
-Computation::Vec3<T> to_vec3(const nlohmann::json& json) {
-  return Computation::Vec3<T>{json.at(0).get<T>(), json.at(1).get<T>(),
-                              json.at(2).get<T>()};
+Vec3<T> to_vec3(const nlohmann::json& json) {
+  return Vec3<T>{json.at(0).get<T>(), json.at(1).get<T>(), json.at(2).get<T>()};
 }
 template <typename T>
-nlohmann::json from_vec3(const Computation::Vec3<T>& vec3) {
+nlohmann::json from_vec3(const Vec3<T>& vec3) {
   auto result = nlohmann::json();
   result[0] = vec3.x;
   result[1] = vec3.y;

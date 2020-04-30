@@ -1,10 +1,10 @@
 #ifndef ACOUSTICSIMULATOR_DATASTORE_H
 #define ACOUSTICSIMULATOR_DATASTORE_H
 
-#include <atomic>
 #include <nlohmann/json.hpp>
 #include <vector>
 #include "Computation/Simulator.h"
+#include "Computation/Vec3.h"
 
 namespace DataStore {
 
@@ -23,24 +23,18 @@ struct SimulationConfiguration {
   Computation::SimulationParameter simulation_parameter;
 };
 
-//
-struct ProcessLocks {
-  std::atomic<bool> simulation_running = false;
-};
-
 // Structure for passing around
 struct GlobalDataStore {
   ToolboxOpen toolbox_open;
   SimulationConfiguration simulation_data;
-  ProcessLocks process_locks;
 };
 
 namespace JSONConvert {
 
 template <typename T>
-[[nodiscard]] Computation::Vec3<T> to_vec3(const nlohmann::json& json);
+[[nodiscard]] Vec3<T> to_vec3(const nlohmann::json& json);
 template <typename T>
-[[nodiscard]] nlohmann::json from_vec3(const Computation::Vec3<T>& vec3);
+[[nodiscard]] nlohmann::json from_vec3(const Vec3<T>& vec3);
 
 [[nodiscard]] Computation::Transducer to_transducer(const nlohmann::json& json);
 [[nodiscard]] nlohmann::json from_transducer(const Computation::Transducer& transducer);

@@ -4,8 +4,7 @@ add_executable(ComputeEngine
         UserInterface/UserInterface.h UserInterface/MenuBar.cpp UserInterface/SetupStyle.cpp
         UserInterface/TransducerConfigurationWidget.cpp UserInterface/SimulationControlWidget.cpp
         UserInterface/BenchmarkingWidget.cpp UserInterface/RunSimulationWidget.cpp
-        Computation/Simulator.h Computation/Simulator.cpp
-        )
+        Computation/Vec3.h Computation/BlockStorage.h Computation/Simulator.h Computation/Simulator.cpp)
 
 target_link_libraries(ComputeEngine PRIVATE project_options project_warnings)
 
