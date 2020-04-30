@@ -1,5 +1,4 @@
-#ifndef ACOUSTICSIMULATOR_SOURCECONFIG_H
-#define ACOUSTICSIMULATOR_SOURCECONFIG_H
+#pragma once
 
 #include <imgui.h>
 
@@ -17,5 +16,3 @@ namespace SourceConfig {
 // Store static configuration
 
 }
-
-#endif  // ACOUSTICSIMULATOR_SOURCECONFIG_H

@@ -1,5 +1,4 @@
-#ifndef ACOUSTICSIMULATOR_COMPUTEENGINE_USERINTERFACE_H
-#define ACOUSTICSIMULATOR_COMPUTEENGINE_USERINTERFACE_H
+#pragma once
 
 #include "../DataStore.h"
 
@@ -13,5 +12,3 @@ void BenchmarkingWidget(DataStore::GlobalDataStore& global_data_store);
 void RunSimulationWidget(DataStore::GlobalDataStore& global_data_store);
 
 }  // namespace UserInterface
-
-#endif  // ACOUSTICSIMULATOR_COMPUTEENGINE_USERINTERFACE_H

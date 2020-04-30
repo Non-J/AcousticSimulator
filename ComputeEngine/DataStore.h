@@ -1,5 +1,4 @@
-#ifndef ACOUSTICSIMULATOR_DATASTORE_H
-#define ACOUSTICSIMULATOR_DATASTORE_H
+#pragma once
 
 #include <nlohmann/json.hpp>
 #include <vector>
@@ -47,5 +46,3 @@ template <typename T>
 }  // namespace JSONConvert
 
 }  // namespace DataStore
-
-#endif  // ACOUSTICSIMULATOR_DATASTORE_H

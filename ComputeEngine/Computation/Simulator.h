@@ -1,5 +1,4 @@
-#ifndef ACOUSTICSIMULATOR_SIMULATOR_H
-#define ACOUSTICSIMULATOR_SIMULATOR_H
+#pragma once
 
 #include <atomic>
 #include <filesystem>
@@ -37,5 +36,3 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
                        Computation::SimulationParameter simulation_parameter);
 
 }  // namespace Computation
-
-#endif  // ACOUSTICSIMULATOR_SIMULATOR_H
