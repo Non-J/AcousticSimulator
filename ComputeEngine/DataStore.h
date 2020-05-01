@@ -28,21 +28,4 @@ struct GlobalDataStore {
   SimulationConfiguration simulation_data;
 };
 
-namespace JSONConvert {
-
-template <typename T>
-[[nodiscard]] Vec3<T> to_vec3(const nlohmann::json& json);
-template <typename T>
-[[nodiscard]] nlohmann::json from_vec3(const Vec3<T>& vec3);
-
-[[nodiscard]] Computation::Transducer to_transducer(const nlohmann::json& json);
-[[nodiscard]] nlohmann::json from_transducer(const Computation::Transducer& transducer);
-
-[[nodiscard]] Computation::SimulationParameter to_simulation_parameter(
-    const nlohmann::json& json);
-[[nodiscard]] nlohmann::json from_simulation_parameter(
-    const Computation::SimulationParameter& simulation_parameter);
-
-}  // namespace JSONConvert
-
 }  // namespace DataStore

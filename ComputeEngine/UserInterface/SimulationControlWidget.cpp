@@ -1,4 +1,5 @@
 #include <imgui.h>
+#include "../JSONConvert.h"
 #include "../SourceConfig.h"
 #include "UserInterface.h"
 
@@ -71,14 +72,13 @@ void UserInterface::SimulationControlWidget(
   // Implement logic to save and load from clipboard
   if (save_to_clipboard and not clipboard_button_pressed) {
     clipboard_button_pressed = true;
-    ImGui::SetClipboardText(
-        DataStore::JSONConvert::from_simulation_parameter(sp).dump().c_str());
+    ImGui::SetClipboardText(JSONConvert::from_simulation_parameter(sp).dump().c_str());
   }
   if (load_from_clipboard and not clipboard_button_pressed) {
     clipboard_button_pressed = true;
     try {
       auto json = nlohmann::json::parse(ImGui::GetClipboardText());
-      sp = DataStore::JSONConvert::to_simulation_parameter(json);
+      sp = JSONConvert::to_simulation_parameter(json);
       invalid_parameter = sp.checkInvalidParameter();
     } catch (const std::exception& e) {
       invalid_parameter = e.what();

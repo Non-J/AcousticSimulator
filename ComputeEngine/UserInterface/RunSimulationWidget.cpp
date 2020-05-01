@@ -34,18 +34,9 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
   // Preliminary check if the specified export directory is ok
   ImGui::PushTextWrapPos(350);
   try {
-    ImGui::TextUnformatted("Resolved export folder path");
+    ImGui::TextUnformatted("Resolved path: ");
     ImGui::Text("%ls", std::filesystem::weakly_canonical(export_directory).c_str());
-
-    if (std::filesystem::exists(export_directory)) {
-      if (not std::filesystem::is_directory(export_directory)) {
-        ImGui::TextColored(Colors::amber400, "The specified path is not a folder.");
-      } else if (not std::filesystem::is_empty(export_directory)) {
-        ImGui::TextColored(
-            Colors::amber400,
-            "The specified folder is not empty. Files may be overwritten.");
-      }
-    }
+    ImGui::TextColored(Colors::amber400, "Note: Existing files may be overwritten.");
   } catch (const std::exception& e) {
     ImGui::TextColored(Colors::amber400, "Filesystem error: %s", e.what());
   }

@@ -23,9 +23,6 @@ struct Transducer {
     if (this->loss_factor < 0 || this->loss_factor > 1) {
       return "Loss factor is not in range 0 and 1";
     }
-    if (this->output_power < 0 || this->output_power > 1) {
-      return "Output power is not in range 0 and 1";
-    }
 
     return std::string();
   };

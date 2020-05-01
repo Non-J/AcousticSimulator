@@ -1,19 +1,6 @@
-#include "DataStore.h"
+#include "JSONConvert.h"
 
-namespace DataStore::JSONConvert {
-
-template <typename T>
-Vec3<T> to_vec3(const nlohmann::json& json) {
-  return Vec3<T>{json.at(0).get<T>(), json.at(1).get<T>(), json.at(2).get<T>()};
-}
-template <typename T>
-nlohmann::json from_vec3(const Vec3<T>& vec3) {
-  auto result = nlohmann::json();
-  result[0] = vec3.x;
-  result[1] = vec3.y;
-  result[2] = vec3.z;
-  return result;
-}
+namespace JSONConvert {
 
 Computation::Transducer to_transducer(const nlohmann::json& json) {
   auto result = Computation::Transducer();
@@ -37,6 +24,7 @@ nlohmann::json from_transducer(const Computation::Transducer& transducer) {
   result["output_power"] = transducer.output_power;
   return result;
 }
+
 Computation::SimulationParameter to_simulation_parameter(const nlohmann::json& json) {
   auto result = Computation::SimulationParameter();
   result.begin = to_vec3<double>(json.at("begin"));
@@ -61,4 +49,4 @@ nlohmann::json from_simulation_parameter(
   return result;
 }
 
-}  // namespace DataStore::JSONConvert
+}  // namespace JSONConvert

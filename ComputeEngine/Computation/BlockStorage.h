@@ -51,6 +51,7 @@ class CellBlockInterpolation {
     const auto z_idx = id % dimension_size.z;
     return Vec3<std::size_t>{x_idx, y_idx, z_idx};
   };
+  [[nodiscard]] std::size_t get_cell_count() const { return dimension_size.product(); };
 };
 
 }  // namespace Computation

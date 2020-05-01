@@ -41,7 +41,7 @@ struct Vec3 {
   }
   // Other vector operations
   [[nodiscard]] T dot_product(const Vec3& rhs) const {
-    return this->x * rhs.x + this->y * rhs.y + this.z * rhs.z;
+    return this->x * rhs.x + this->y * rhs.y + this->z * rhs.z;
   }
   [[nodiscard]] Vec3 cross_product(const Vec3& rhs) const {
     return Vec3<T>{
@@ -53,7 +53,9 @@ struct Vec3 {
   [[nodiscard]] T euclidean_norm_squared() const {
     return this->x * this->x + this->y * this->y + this->z * this->z;
   }
-  [[nodiscard]] T euclidean_norm() const { sqrt(this->euclidean_norm()); }
+  [[nodiscard]] T euclidean_norm() const {
+    return sqrt(this->euclidean_norm_squared());
+  }
   [[nodiscard]] T euclidean_distance(const Vec3& rhs) const {
     return (*this - rhs).euclidean_norm();
   }

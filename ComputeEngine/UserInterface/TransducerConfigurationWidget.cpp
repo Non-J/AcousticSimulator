@@ -1,6 +1,7 @@
 #include <fmt/format.h>
 #include <imgui.h>
 #include "../DataStore.h"
+#include "../JSONConvert.h"
 #include "../SourceConfig.h"
 #include "../imgui_stdlib/imgui_stdlib.h"
 #include "UserInterface.h"
@@ -46,7 +47,7 @@ void UserInterface::TransducerConfigurationWidget(
       transducers.clear();
 
       for (const auto& item : parsedResult) {
-        auto parsedItem = DataStore::JSONConvert::to_transducer(item);
+        auto parsedItem = JSONConvert::to_transducer(item);
 
         const auto invalidParameter = parsedItem.checkInvalidParameter();
         if (not invalidParameter.empty()) {

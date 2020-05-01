@@ -2,8 +2,6 @@ import {
 	writable
 } from 'svelte/store'
 
-import * as utils from "./utils.js";
-
 export const flag_renderSimulationRegion = writable(false);
 
 export const simulationConfiguration = writable({
