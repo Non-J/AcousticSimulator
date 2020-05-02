@@ -6,8 +6,8 @@
 #include <thread>
 #include "../Computation/Simulator.h"
 #include "../DataStore.h"
-#include "../SourceConfig.h"
 #include "../imgui_stdlib/imgui_stdlib.h"
+#include "Colors.h"
 #include "UserInterface.h"
 
 void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_store) {
@@ -36,9 +36,9 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
   try {
     ImGui::TextUnformatted("Resolved path: ");
     ImGui::Text("%ls", std::filesystem::weakly_canonical(export_directory).c_str());
-    ImGui::TextColored(Colors::amber400, "Note: Existing files may be overwritten.");
+    ImGui::TextColored(Colors::Amber400, "Note: Existing files may be overwritten.");
   } catch (const std::exception& e) {
-    ImGui::TextColored(Colors::amber400, "Filesystem error: %s", e.what());
+    ImGui::TextColored(Colors::Red400, "Filesystem error: %s", e.what());
   }
   ImGui::PopTextWrapPos();
 
@@ -47,7 +47,7 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
   auto run_simulation_button = ImGui::Button("Run Simulation", ImVec2(350, 20));
 
   if (simulation_running.load()) {
-    ImGui::TextColored(Colors::blue400, "Simulation is running.");
+    ImGui::TextColored(Colors::Blue400, "Simulation is running.");
   } else {
     ImGui::TextUnformatted("Simulation is not running.");
 
@@ -102,7 +102,7 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
   // Report error to user
   ImGui::PushTextWrapPos(350);
   if (not simulation_thread_forking_error.empty()) {
-    ImGui::TextColored(Colors::amber400, "%s", simulation_thread_forking_error.c_str());
+    ImGui::TextColored(Colors::Red400, "%s", simulation_thread_forking_error.c_str());
   }
   simulation_logging_lock.lock();
   ImGui::TextUnformatted(simulation_logging.c_str());

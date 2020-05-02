@@ -1,6 +1,6 @@
 #include <imgui.h>
-#include "../JSONConvert.h"
-#include "../SourceConfig.h"
+#include "../DataStore.h"
+#include "Colors.h"
 #include "UserInterface.h"
 
 void UserInterface::SimulationControlWidget(
@@ -51,11 +51,11 @@ void UserInterface::SimulationControlWidget(
     invalid_parameter = sp.checkInvalidParameter();
   }
   if (invalid_parameter.empty()) {
-    ImGui::TextColored(Colors::green400, "Simulation parameters loaded");
+    ImGui::TextColored(Colors::Green400, "Simulation parameters loaded");
   } else {
-    ImGui::TextColored(Colors::amber400, "Simulation parameters NOT loaded");
+    ImGui::TextColored(Colors::Red400, "Simulation parameters NOT loaded");
     ImGui::PushTextWrapPos(250);
-    ImGui::TextColored(Colors::amber400, "%s", invalid_parameter.c_str());
+    ImGui::TextColored(Colors::Red400, "%s", invalid_parameter.c_str());
     ImGui::PopTextWrapPos();
   }
 

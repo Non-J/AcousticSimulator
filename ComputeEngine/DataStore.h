@@ -3,7 +3,6 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 #include "Computation/Simulator.h"
-#include "Computation/Vec3.h"
 
 namespace DataStore {
 
@@ -29,3 +28,15 @@ struct GlobalDataStore {
 };
 
 }  // namespace DataStore
+
+namespace JSONConvert {
+
+[[nodiscard]] Computation::Transducer to_transducer(const nlohmann::json& json);
+[[nodiscard]] nlohmann::json from_transducer(const Computation::Transducer& transducer);
+
+[[nodiscard]] Computation::SimulationParameter to_simulation_parameter(
+    const nlohmann::json& json);
+[[nodiscard]] nlohmann::json from_simulation_parameter(
+    const Computation::SimulationParameter& simulation_parameter);
+
+}  // namespace JSONConvert

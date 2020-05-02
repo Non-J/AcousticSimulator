@@ -1,10 +1,10 @@
 add_executable(ComputeEngine
-        main.cpp SourceConfig.h DataStore.h
+        main.cpp DataStore.h DataStore.cpp
         imgui_stdlib/imgui_stdlib.cpp
         UserInterface/UserInterface.h UserInterface/MenuBar.cpp UserInterface/SetupStyle.cpp
         UserInterface/TransducerConfigurationWidget.cpp UserInterface/SimulationControlWidget.cpp
-        UserInterface/BenchmarkingWidget.cpp UserInterface/RunSimulationWidget.cpp
-        Computation/Vec3.h Computation/BlockStorage.h Computation/Simulator.h Computation/Simulator.cpp JSONConvert.cpp JSONConvert.h)
+        UserInterface/BenchmarkingWidget.cpp UserInterface/RunSimulationWidget.cpp UserInterface/Colors.h
+        Computation/Vec3.h Computation/Vec3.cpp Computation/BlockStorage.h Computation/Simulator.h Computation/Simulator.cpp)
 
 target_link_libraries(ComputeEngine PRIVATE project_options project_warnings)
 

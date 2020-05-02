@@ -1,9 +1,8 @@
 #include <fmt/format.h>
 #include <imgui.h>
 #include "../DataStore.h"
-#include "../JSONConvert.h"
-#include "../SourceConfig.h"
 #include "../imgui_stdlib/imgui_stdlib.h"
+#include "Colors.h"
 #include "UserInterface.h"
 
 void UserInterface::TransducerConfigurationWidget(
@@ -72,9 +71,9 @@ void UserInterface::TransducerConfigurationWidget(
 
   // Display Result
   if (parse_text_success) {
-    ImGui::TextColored(Colors::green400, "Transducer configuration loaded");
+    ImGui::TextColored(Colors::Green400, "Transducer configuration loaded");
   } else {
-    ImGui::TextColored(Colors::amber400, "Transducer configuration NOT loaded");
+    ImGui::TextColored(Colors::Red400, "Transducer configuration NOT loaded");
   }
   ImGui::PushTextWrapPos(350.0);
   ImGui::TextUnformatted(parse_text_result.c_str());

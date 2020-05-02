@@ -4,18 +4,18 @@
 #include <complex>
 #include <filesystem>
 #include <fstream>
-#include <nlohmann/json.hpp>
 #include <numbers>
 #include <string_view>
-#include "../JSONConvert.h"
 #include "BlockStorage.h"
 
 namespace Computation {
 
+// constant i
+constexpr auto i = std::complex<double>(0, 1);
+
 std::complex<double> compute_pressure(const Vec3<double>& point,
                                       const Transducer& transducer,
                                       const SimulationParameter& simulation_parameter) {
-  const auto i = std::complex<double>(0, 1);
   const auto angle = transducer.position.cosine_angle(transducer.target, point);
   const auto dist = transducer.position.euclidean_distance(point);
   const auto wave_number = 2.0 * std::numbers::pi * simulation_parameter.frequency /
@@ -45,11 +45,11 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
   const auto log = [&](std::string_view message) {
     simulation_logging_lock->lock();
     simulation_logging->append(
-        fmt::format(FMT_STRING("[{:d}/{:d} ms] {:s}\n"),
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
+        fmt::format(FMT_STRING("[{:d}/{:d} s] {:s}\n"),
+                    std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::steady_clock::now() - time_begin_lap)
                         .count(),
-                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::duration_cast<std::chrono::seconds>(
                         std::chrono::steady_clock::now() - time_begin)
                         .count(),
                     message));
@@ -58,20 +58,28 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
   };
   log("Simulation process started");
 
-  // The size is computed based on cell_size
-  // To allow for derivation, extra cells must be padded
-  const auto padded_size =
+  // size of samples to process
+  const auto sample_size =
       ((simulation_parameter.end - simulation_parameter.begin).elem_abs() /
        simulation_parameter.cell_size)
           .cast<std::size_t>() +
-      3;
+      1;
+  // padding added for derivation
+  const auto padded_size = sample_size + 2;
 
-  // Shift by one cell (padding)
+  // region boundary for sample
+  const auto sample_begin = simulation_parameter.begin;
+  const auto sample_end = simulation_parameter.begin +
+                          (sample_size.cast<double>() * simulation_parameter.cell_size);
+  const auto sample_interpolation =
+      CellBlockInterpolation(sample_size, sample_begin, sample_end);
+
+  // region boundary for sample with padding
   const auto padded_begin = simulation_parameter.begin - simulation_parameter.cell_size;
   const auto padded_end =
       padded_begin + (padded_size.cast<double>() * simulation_parameter.cell_size);
   const auto padded_interpolation =
-      CellBlockInterpolation<double>(padded_size, padded_begin, padded_end);
+      CellBlockInterpolation(padded_size, padded_begin, padded_end);
 
   // TODO: Update openmp loops (see comment)
   /* OpenMP 2.0 (latest supported by MSVC) doesn't allow for unsigned loop counter
@@ -106,9 +114,9 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
   auto metadata = nlohmann::json();
 
   metadata["version"] = 1;
-  metadata["pressure_result_dimension"] = JSONConvert::from_vec3(padded_size);
-  metadata["pressure_result_begin"] = JSONConvert::from_vec3(padded_begin);
-  metadata["pressure_result_end"] = JSONConvert::from_vec3(padded_end);
+  metadata["pressure_result_dimension"] = padded_size.to_json();
+  metadata["pressure_result_begin"] = padded_begin.to_json();
+  metadata["pressure_result_end"] = padded_end.to_json();
 
   auto metadata_export =
       std::ofstream(export_directory / std::string_view("metadata.json"),
