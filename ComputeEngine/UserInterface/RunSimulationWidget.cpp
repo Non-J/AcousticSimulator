@@ -78,9 +78,11 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
         // Start simulation
         simulation_running.store(true);
         simulation_thread_forking_error = std::string();
-        simulation_logging_lock.lock();
-        simulation_logging.clear();
-        simulation_logging_lock.unlock();
+        {
+          const auto scoped_lock =
+              std::scoped_lock<std::mutex>(simulation_logging_lock);
+          simulation_logging.clear();
+        }
 
         // Fork simulation thread
         auto simulation_thread =
@@ -104,9 +106,10 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
   if (not simulation_thread_forking_error.empty()) {
     ImGui::TextColored(Colors::Red400, "%s", simulation_thread_forking_error.c_str());
   }
-  simulation_logging_lock.lock();
-  ImGui::TextUnformatted(simulation_logging.c_str());
-  simulation_logging_lock.unlock();
+  {
+    const auto scoped_lock = std::scoped_lock<std::mutex>(simulation_logging_lock);
+    ImGui::TextUnformatted(simulation_logging.c_str());
+  }
   ImGui::PopTextWrapPos();
 
   ImGui::End();

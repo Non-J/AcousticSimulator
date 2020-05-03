@@ -19,7 +19,7 @@ std::complex<double> compute_pressure(const Vec3<double>& point,
   const auto angle = transducer.position.cosine_angle(transducer.target, point);
   const auto dist = transducer.position.euclidean_distance(point);
   const auto wave_number = 2.0 * std::numbers::pi * simulation_parameter.frequency /
-                           simulation_parameter.wave_speed;
+                           simulation_parameter.air_wave_speed;
 
   const auto directivity = [&]() -> double {
     const auto intermediate = wave_number * transducer.radius * std::sin(angle);
@@ -33,6 +33,15 @@ std::complex<double> compute_pressure(const Vec3<double>& point,
          (transducer.output_power * transducer.loss_factor * directivity / dist);
 }
 
+template <typename T, typename D>
+constexpr T numerical_differentiation(const T& lhs, const T& rhs, const D& dist) {
+  return (rhs - lhs) / (dist * 2);
+}
+
+constexpr double euclidean_norm_squared(const std::complex<double>& complex) {
+  return complex.real() * complex.real() + complex.imag() * complex.imag();
+}
+
 void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
                        std::mutex* simulation_logging_lock,
                        std::string* simulation_logging,
@@ -43,7 +52,7 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
   const auto time_begin = std::chrono::steady_clock::now();
   auto time_begin_lap = time_begin;
   const auto log = [&](std::string_view message) {
-    simulation_logging_lock->lock();
+    const auto scoped_lock = std::scoped_lock<std::mutex>(*simulation_logging_lock);
     simulation_logging->append(
         fmt::format(FMT_STRING("[{:d}/{:d} s] {:s}\n"),
                     std::chrono::duration_cast<std::chrono::seconds>(
@@ -53,33 +62,36 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
                         std::chrono::steady_clock::now() - time_begin)
                         .count(),
                     message));
-    simulation_logging_lock->unlock();
     time_begin_lap = std::chrono::steady_clock::now();
   };
   log("Simulation process started");
 
-  // size of samples to process
-  const auto sample_size =
+  // force result is the smallest which will be used as the baseline
+  const auto force_cnt =
       ((simulation_parameter.end - simulation_parameter.begin).elem_abs() /
        simulation_parameter.cell_size)
           .cast<std::size_t>() +
       1;
-  // padding added for derivation
-  const auto padded_size = sample_size + 2;
+  const auto force_beg = simulation_parameter.begin;
+  const auto force_end = simulation_parameter.begin +
+                         (force_cnt.cast<double>() * simulation_parameter.cell_size);
+  const auto force_blk = CellBlockInterpolation(force_cnt, force_beg, force_end);
+  const auto force_lpn = int64_t(force_blk.get_cell_count());
 
-  // region boundary for sample
-  const auto sample_begin = simulation_parameter.begin;
-  const auto sample_end = simulation_parameter.begin +
-                          (sample_size.cast<double>() * simulation_parameter.cell_size);
-  const auto sample_interpolation =
-      CellBlockInterpolation(sample_size, sample_begin, sample_end);
+  // for pressure and potential result, padding is added for differentiation
+  const auto potential_cnt = force_cnt + 2;
+  const auto potential_beg = force_beg - simulation_parameter.cell_size;
+  const auto potential_end = force_end + simulation_parameter.cell_size;
+  const auto potential_blk =
+      CellBlockInterpolation(potential_cnt, potential_beg, potential_end);
+  const auto potential_lpn = int64_t(potential_blk.get_cell_count());
 
-  // region boundary for sample with padding
-  const auto padded_begin = simulation_parameter.begin - simulation_parameter.cell_size;
-  const auto padded_end =
-      padded_begin + (padded_size.cast<double>() * simulation_parameter.cell_size);
-  const auto padded_interpolation =
-      CellBlockInterpolation(padded_size, padded_begin, padded_end);
+  const auto pressure_cnt = potential_cnt + 2;
+  const auto pressure_beg = potential_beg - simulation_parameter.cell_size;
+  const auto pressure_end = potential_end + simulation_parameter.cell_size;
+  const auto pressure_blk =
+      CellBlockInterpolation(pressure_cnt, pressure_beg, pressure_end);
+  const auto pressure_lpn = int64_t(pressure_blk.get_cell_count());
 
   // TODO: Update openmp loops (see comment)
   /* OpenMP 2.0 (latest supported by MSVC) doesn't allow for unsigned loop counter
@@ -88,35 +100,149 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
 
   log("Computing pressure");
 
-  auto pressure_block = CellBlock<std::complex<double>>(padded_size);
+  auto pressure_val = CellBlock<std::complex<double>>(pressure_cnt);
 
 #pragma omp parallel for
-  for (int64_t id = 0; id < int64_t(padded_interpolation.get_cell_count()); ++id) {
+  for (int64_t id = 0; id < pressure_lpn; ++id) {
     auto pressure_result = std::complex<double>();
     for (const auto& transducer : transducers) {
-      pressure_result += compute_pressure(padded_interpolation.get_real_vec(id),
-                                          transducer, simulation_parameter);
+      pressure_result += compute_pressure(pressure_blk.get_real_vec(id), transducer,
+                                          simulation_parameter);
     }
-    pressure_block.set_cell(id, pressure_result);
+    pressure_val.set_cell(id, pressure_result);
   }
 
-  log("Exporting pressure");
+  log("Computing potential");
 
-  auto pressure_export =
+  // constant used for potential computation
+  const auto particle_volume =
+      (4.0 / 3.0) * std::numbers::pi * simulation_parameter.particle_radius *
+      simulation_parameter.particle_radius * simulation_parameter.particle_radius;
+  const auto k1 = (1.0 / 4.0) * particle_volume *
+                  ((1.0 / (simulation_parameter.air_wave_speed *
+                           simulation_parameter.air_wave_speed *
+                           simulation_parameter.air_density)) -
+                   (1.0 / (simulation_parameter.particle_wave_speed *
+                           simulation_parameter.particle_wave_speed *
+                           simulation_parameter.particle_density)));
+  const auto freq = simulation_parameter.frequency / (2.0 * std::numbers::pi);
+  const auto k2 =
+      (3.0 / 4.0) * particle_volume *
+      ((simulation_parameter.air_density - simulation_parameter.particle_density) /
+       (freq * freq * simulation_parameter.air_density *
+        (simulation_parameter.air_density +
+         2.0 * simulation_parameter.particle_density)));
+
+  auto potential_val = CellBlock<double>(potential_cnt);
+
+#pragma omp parallel for
+  for (int64_t id = 0; id < potential_lpn; ++id) {
+    const auto idx_lhs = potential_blk.get_int_vec(id);
+    const auto idx_mid = idx_lhs + 1;
+    const auto idx_rhs = idx_lhs + 2;
+
+    // TODO: Refactor this
+    // Call below is unreadable and should be wrapped in a function or some kind of
+    // abstraction
+    const auto p_x = euclidean_norm_squared(numerical_differentiation(
+        pressure_val.get_cell(pressure_blk.get_id({idx_lhs.x, idx_mid.y, idx_mid.z})),
+        pressure_val.get_cell(pressure_blk.get_id({idx_rhs.x, idx_mid.y, idx_mid.z})),
+        simulation_parameter.cell_size));
+    const auto p_y = euclidean_norm_squared(numerical_differentiation(
+        pressure_val.get_cell(pressure_blk.get_id({idx_mid.x, idx_lhs.y, idx_mid.z})),
+        pressure_val.get_cell(pressure_blk.get_id({idx_mid.x, idx_rhs.y, idx_mid.z})),
+        simulation_parameter.cell_size));
+    const auto p_z = euclidean_norm_squared(numerical_differentiation(
+        pressure_val.get_cell(pressure_blk.get_id({idx_mid.x, idx_mid.y, idx_lhs.z})),
+        pressure_val.get_cell(pressure_blk.get_id({idx_mid.x, idx_mid.y, idx_rhs.z})),
+        simulation_parameter.cell_size));
+
+    const auto p = euclidean_norm_squared(
+        pressure_val.get_cell(pressure_blk.get_id({idx_mid.x, idx_mid.y, idx_mid.z})));
+
+    const auto u = 2.0 * k1 * p - 2.0 * k2 * (p_x + p_y + p_z);
+    potential_val.set_cell(id, u);
+  }
+
+  log("Computing force");
+
+  auto force_x_val = CellBlock<double>(force_cnt);
+  auto force_y_val = CellBlock<double>(force_cnt);
+  auto force_z_val = CellBlock<double>(force_cnt);
+
+#pragma omp parallel for
+  for (int64_t id = 0; id < force_lpn; ++id) {
+    const auto idx_lhs = force_blk.get_int_vec(id);
+    const auto idx_mid = idx_lhs + 1;
+    const auto idx_rhs = idx_lhs + 2;
+
+    // TODO: Refactor this (too)
+    const auto f_x = -numerical_differentiation(
+        potential_val.get_cell(potential_blk.get_id({idx_lhs.x, idx_mid.y, idx_mid.z})),
+        potential_val.get_cell(potential_blk.get_id({idx_rhs.x, idx_mid.y, idx_mid.z})),
+        simulation_parameter.cell_size);
+    const auto f_y = -numerical_differentiation(
+        potential_val.get_cell(potential_blk.get_id({idx_mid.x, idx_lhs.y, idx_mid.z})),
+        potential_val.get_cell(potential_blk.get_id({idx_mid.x, idx_rhs.y, idx_mid.z})),
+        simulation_parameter.cell_size);
+    const auto f_z = -numerical_differentiation(
+        potential_val.get_cell(potential_blk.get_id({idx_mid.x, idx_mid.y, idx_lhs.z})),
+        potential_val.get_cell(potential_blk.get_id({idx_mid.x, idx_mid.y, idx_rhs.z})),
+        simulation_parameter.cell_size);
+
+    force_x_val.set_cell(id, f_x);
+    force_y_val.set_cell(id, f_y);
+    force_z_val.set_cell(id, f_z);
+  }
+
+  log("Exporting data");
+
+  auto pressure_exp =
       std::ofstream(export_directory / std::string_view("pressure_result.bin"),
                     std::fstream::out | std::fstream::trunc | std::fstream::binary);
-  pressure_export.write(pressure_block.get_raw_bytes(),
-                        pressure_block.size() * sizeof(std::complex<double>));
-  pressure_export.close();
+  pressure_exp.write(pressure_val.get_raw_bytes(),
+                     pressure_val.size() * sizeof(std::complex<double>));
+  pressure_exp.close();
+
+  auto potential_exp =
+      std::ofstream(export_directory / std::string_view("potential_result.bin"),
+                    std::fstream::out | std::fstream::trunc | std::fstream::binary);
+  potential_exp.write(potential_val.get_raw_bytes(),
+                      potential_val.size() * sizeof(double));
+  potential_exp.close();
+
+  auto force_x_exp =
+      std::ofstream(export_directory / std::string_view("force_x_result.bin"),
+                    std::fstream::out | std::fstream::trunc | std::fstream::binary);
+  force_x_exp.write(force_x_val.get_raw_bytes(), force_x_val.size() * sizeof(double));
+  force_x_exp.close();
+
+  auto force_y_exp =
+      std::ofstream(export_directory / std::string_view("force_y_result.bin"),
+                    std::fstream::out | std::fstream::trunc | std::fstream::binary);
+  force_y_exp.write(force_y_val.get_raw_bytes(), force_y_val.size() * sizeof(double));
+  force_y_exp.close();
+
+  auto force_z_exp =
+      std::ofstream(export_directory / std::string_view("force_z_result.bin"),
+                    std::fstream::out | std::fstream::trunc | std::fstream::binary);
+  force_z_exp.write(force_z_val.get_raw_bytes(), force_z_val.size() * sizeof(double));
+  force_z_exp.close();
 
   log("Exporting metadata");
 
   auto metadata = nlohmann::json();
 
   metadata["version"] = 1;
-  metadata["pressure_result_dimension"] = padded_size.to_json();
-  metadata["pressure_result_begin"] = padded_begin.to_json();
-  metadata["pressure_result_end"] = padded_end.to_json();
+  metadata["pressure_cnt"] = pressure_cnt.to_json();
+  metadata["pressure_beg"] = pressure_beg.to_json();
+  metadata["pressure_end"] = pressure_end.to_json();
+  metadata["potential_cnt"] = potential_cnt.to_json();
+  metadata["potential_beg"] = potential_beg.to_json();
+  metadata["potential_end"] = potential_end.to_json();
+  metadata["force_cnt"] = force_cnt.to_json();
+  metadata["force_beg"] = force_beg.to_json();
+  metadata["force_end"] = force_end.to_json();
 
   auto metadata_export =
       std::ofstream(export_directory / std::string_view("metadata.json"),

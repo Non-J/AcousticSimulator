@@ -32,7 +32,8 @@ struct SimulationParameter {
   Vec3<double> begin;
   Vec3<double> end;
 
-  double cell_size, frequency, particle_radius, air_density, wave_speed;
+  double cell_size, frequency, air_density, air_wave_speed, particle_radius,
+      particle_density, particle_wave_speed;
 
   [[nodiscard]] std::string checkInvalidParameter() const {
     if (this->cell_size <= 0) {
@@ -41,14 +42,20 @@ struct SimulationParameter {
     if (this->frequency <= 0) {
       return "Frequency is not positive";
     }
-    if (this->particle_radius <= 0) {
-      return "Particle radius is not positive";
-    }
     if (this->air_density <= 0) {
       return "Air density is not positive";
     }
-    if (this->wave_speed <= 0) {
-      return "Wave speed is not positive";
+    if (this->air_wave_speed <= 0) {
+      return "Air wave speed is not positive";
+    }
+    if (this->particle_radius <= 0) {
+      return "Particle radius is not positive";
+    }
+    if (this->particle_density <= 0) {
+      return "Particle density is not positive";
+    }
+    if (this->particle_wave_speed <= 0) {
+      return "Particle wave speed is not positive";
     }
 
     return std::string();

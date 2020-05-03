@@ -1,4 +1,5 @@
 #include <imgui.h>
+#include "../Computation/Vec3.h"
 #include "../DataStore.h"
 #include "Colors.h"
 #include "UserInterface.h"
@@ -21,6 +22,7 @@ void UserInterface::SimulationControlWidget(
                               ImGuiInputTextFlags_CharsScientific);
   input |= ImGui::InputDouble("Z##begin", &sp.begin.z, NULL, NULL, "%.3e m",
                               ImGuiInputTextFlags_CharsScientific);
+
   ImGui::TextUnformatted("Stop simulation region");
   input |= ImGui::InputDouble("X##end", &sp.end.x, NULL, NULL, "%.3e m",
                               ImGuiInputTextFlags_CharsScientific);
@@ -28,22 +30,37 @@ void UserInterface::SimulationControlWidget(
                               ImGuiInputTextFlags_CharsScientific);
   input |= ImGui::InputDouble("Z##end", &sp.end.z, NULL, NULL, "%.3e m",
                               ImGuiInputTextFlags_CharsScientific);
+
   ImGui::TextUnformatted("Simulation cell size");
   input |= ImGui::InputDouble("##cell_size", &sp.cell_size, NULL, NULL, "%.3e m",
                               ImGuiInputTextFlags_CharsScientific);
+  ImGui::Text("Estimated cell count\n%.0f",
+              ((sp.end - sp.begin).elem_abs() / sp.cell_size).product());
+
   ImGui::TextUnformatted("Transducer frequency");
   input |= ImGui::InputDouble("##frequency", &sp.frequency, NULL, NULL, "%.3f Hz",
                               ImGuiInputTextFlags_CharsScientific);
-  ImGui::Text("Wavelength: %e m", sp.wave_speed / sp.frequency);
-  ImGui::TextUnformatted("Particle radius");
-  input |= ImGui::InputDouble("##particle_radius", &sp.particle_radius, NULL, NULL,
-                              "%.3e m", ImGuiInputTextFlags_CharsScientific);
+  ImGui::Text("Wavelength\n%e m", sp.air_wave_speed / sp.frequency);
+
   ImGui::TextUnformatted("Air density");
   input |= ImGui::InputDouble("##air_density", &sp.air_density, NULL, NULL,
                               "%.3f kg/m3", ImGuiInputTextFlags_CharsScientific);
-  ImGui::TextUnformatted("Wave speed");
-  input |= ImGui::InputDouble("##wave_speed", &sp.wave_speed, NULL, NULL, "%.3f m/s",
-                              ImGuiInputTextFlags_CharsScientific);
+
+  ImGui::TextUnformatted("Wave speed (in air)");
+  input |= ImGui::InputDouble("##air_wave_speed", &sp.air_wave_speed, NULL, NULL,
+                              "%.3f m/s", ImGuiInputTextFlags_CharsScientific);
+
+  ImGui::TextUnformatted("Particle radius");
+  input |= ImGui::InputDouble("##particle_radius", &sp.particle_radius, NULL, NULL,
+                              "%.3e m", ImGuiInputTextFlags_CharsScientific);
+
+  ImGui::TextUnformatted("Particle density");
+  input |= ImGui::InputDouble("##particle_density", &sp.particle_density, NULL, NULL,
+                              "%.3f kg/m3", ImGuiInputTextFlags_CharsScientific);
+
+  ImGui::TextUnformatted("Wave speed (in particle)");
+  input |= ImGui::InputDouble("##particle_wave_speed", &sp.particle_wave_speed, NULL,
+                              NULL, "%.3f m/s", ImGuiInputTextFlags_CharsScientific);
 
   // Check invalid parameter if input changed
   static auto invalid_parameter = sp.checkInvalidParameter();

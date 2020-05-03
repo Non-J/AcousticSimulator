@@ -12,7 +12,7 @@ void executeBenchmark(std::mutex* logs_lock, std::string* logs, bool* running) {
   auto begin_lap = begin;
 
   const auto log = [&](std::string_view message) {
-    logs_lock->lock();
+    const auto scoped_lock = std::scoped_lock<std::mutex>(*logs_lock);
     *logs += fmt::format(FMT_STRING("[{:d}/{:d} ms] {:s}\n"),
                          std::chrono::duration_cast<std::chrono::milliseconds>(
                              std::chrono::steady_clock::now() - begin_lap)
@@ -21,7 +21,6 @@ void executeBenchmark(std::mutex* logs_lock, std::string* logs, bool* running) {
                              std::chrono::steady_clock::now() - begin)
                              .count(),
                          message);
-    logs_lock->unlock();
     begin_lap = std::chrono::steady_clock::now();
   };
 
@@ -40,9 +39,10 @@ void executeBenchmark(std::mutex* logs_lock, std::string* logs, bool* running) {
 #pragma omp parallel for
   for (auto i = 0; i < 25000000; ++i) {
     const auto v = gsl_sf_bessel_J0(6.0);
-    omp_result_lock.lock();
-    result += v;
-    omp_result_lock.unlock();
+    {
+      const auto scoped_lock = std::scoped_lock<std::mutex>(omp_result_lock);
+      result += v;
+    }
   }
   log("25M openmp parallel for gsl_sf_bessel_J0");
 
@@ -71,9 +71,10 @@ void UserInterface::BenchmarkingWidget(DataStore::GlobalDataStore& global_data_s
   }
 
   ImGui::PushTextWrapPos(400);
-  benchmark_result_lock.lock();
-  ImGui::TextUnformatted(benchmark_result.c_str());
-  benchmark_result_lock.unlock();
+  {
+    const auto scoped_lock = std::scoped_lock<std::mutex>(benchmark_result_lock);
+    ImGui::TextUnformatted(benchmark_result.c_str());
+  }
   ImGui::PopTextWrapPos();
 
   ImGui::End();

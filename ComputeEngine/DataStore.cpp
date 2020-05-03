@@ -32,9 +32,11 @@ Computation::SimulationParameter to_simulation_parameter(const nlohmann::json& j
   result.end = Vec3<double>(json.at("end"));
   result.cell_size = json.at("cell_size").get<double>();
   result.frequency = json.at("frequency").get<double>();
-  result.particle_radius = json.at("particle_radius").get<double>();
   result.air_density = json.at("air_density").get<double>();
-  result.wave_speed = json.at("wave_speed").get<double>();
+  result.air_wave_speed = json.at("air_wave_speed").get<double>();
+  result.particle_radius = json.at("particle_radius").get<double>();
+  result.particle_density = json.at("particle_density").get<double>();
+  result.particle_wave_speed = json.at("particle_wave_speed").get<double>();
   return result;
 }
 nlohmann::json from_simulation_parameter(
@@ -44,9 +46,11 @@ nlohmann::json from_simulation_parameter(
   result["end"] = simulation_parameter.end.to_json();
   result["cell_size"] = simulation_parameter.cell_size;
   result["frequency"] = simulation_parameter.frequency;
-  result["particle_radius"] = simulation_parameter.particle_radius;
   result["air_density"] = simulation_parameter.air_density;
-  result["wave_speed"] = simulation_parameter.wave_speed;
+  result["air_wave_speed"] = simulation_parameter.air_wave_speed;
+  result["particle_radius"] = simulation_parameter.particle_radius;
+  result["particle_density"] = simulation_parameter.particle_density;
+  result["particle_wave_speed"] = simulation_parameter.particle_wave_speed;
   return result;
 }
 

@@ -48,7 +48,7 @@ struct Vec3 {
   }
   // Return euclidean norm of vector (vector length)
   [[nodiscard]] T euclidean_norm() const {
-    return T(sqrt(this->euclidean_norm_squared()));
+    return T(std::sqrt(this->euclidean_norm_squared()));
   }
 
   // endregion
@@ -116,7 +116,7 @@ struct Vec3 {
   }
   // Return cosine angle formed by vector a, b; where this vector is the origin point
   [[nodiscard]] T cosine_angle(const Vec3& a, const Vec3& b) const {
-    return T(acos((a - *this).cosine_similarity(b - *this)));
+    return T(std::acos((a - *this).cosine_similarity(b - *this)));
   }
 
   // endregion

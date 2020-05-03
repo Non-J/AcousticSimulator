@@ -7,7 +7,7 @@
 #include "DataStore.h"
 #include "UserInterface/UserInterface.h"
 
-int main(int argc, char** argv) {
+int main(int /*argc*/, char** /*argv*/) {
   auto global_data_store = DataStore::GlobalDataStore();
 
   // Window Setup
