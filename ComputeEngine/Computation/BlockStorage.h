@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstddef>
 #include <tuple>
+#include <vector>
 #include "Vec3.h"
 
 namespace Computation {
@@ -11,21 +12,21 @@ template <typename T>
 class CellBlock {
   // 3-dimensional contiguous memory
   Vec3<std::size_t> dimension_size;
-  T* data;
+  std::vector<T> data;
 
  public:
   CellBlock(Vec3<std::size_t> dimension_size) : dimension_size(dimension_size) {
-    data = new T[dimension_size.product()];
+    data = std::vector<T>(dimension_size.product());
   }
-
-  ~CellBlock() { delete[] data; }
 
   T get_cell(std::size_t id) const { return data[id]; };
   void set_cell(std::size_t id, T value) { data[id] = value; };
 
   [[nodiscard]] std::size_t size() const { return dimension_size.product(); }
 
-  [[nodiscard]] char* get_raw_bytes() const { return reinterpret_cast<char*>(data); }
+  [[nodiscard]] char* unsafe_get_raw_bytes() {
+    return reinterpret_cast<char*>(data.data());
+  }
 };
 
 class CellBlockInterpolation {

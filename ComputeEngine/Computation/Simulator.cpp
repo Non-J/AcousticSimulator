@@ -201,33 +201,36 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
   auto pressure_exp =
       std::ofstream(export_directory / std::string_view("pressure_result.bin"),
                     std::fstream::out | std::fstream::trunc | std::fstream::binary);
-  pressure_exp.write(pressure_val.get_raw_bytes(),
+  pressure_exp.write(pressure_val.unsafe_get_raw_bytes(),
                      pressure_val.size() * sizeof(std::complex<double>));
   pressure_exp.close();
 
   auto potential_exp =
       std::ofstream(export_directory / std::string_view("potential_result.bin"),
                     std::fstream::out | std::fstream::trunc | std::fstream::binary);
-  potential_exp.write(potential_val.get_raw_bytes(),
+  potential_exp.write(potential_val.unsafe_get_raw_bytes(),
                       potential_val.size() * sizeof(double));
   potential_exp.close();
 
   auto force_x_exp =
       std::ofstream(export_directory / std::string_view("force_x_result.bin"),
                     std::fstream::out | std::fstream::trunc | std::fstream::binary);
-  force_x_exp.write(force_x_val.get_raw_bytes(), force_x_val.size() * sizeof(double));
+  force_x_exp.write(force_x_val.unsafe_get_raw_bytes(),
+                    force_x_val.size() * sizeof(double));
   force_x_exp.close();
 
   auto force_y_exp =
       std::ofstream(export_directory / std::string_view("force_y_result.bin"),
                     std::fstream::out | std::fstream::trunc | std::fstream::binary);
-  force_y_exp.write(force_y_val.get_raw_bytes(), force_y_val.size() * sizeof(double));
+  force_y_exp.write(force_y_val.unsafe_get_raw_bytes(),
+                    force_y_val.size() * sizeof(double));
   force_y_exp.close();
 
   auto force_z_exp =
       std::ofstream(export_directory / std::string_view("force_z_result.bin"),
                     std::fstream::out | std::fstream::trunc | std::fstream::binary);
-  force_z_exp.write(force_z_val.get_raw_bytes(), force_z_val.size() * sizeof(double));
+  force_z_exp.write(force_z_val.unsafe_get_raw_bytes(),
+                    force_z_val.size() * sizeof(double));
   force_z_exp.close();
 
   result_log->log("Exporting metadata");
