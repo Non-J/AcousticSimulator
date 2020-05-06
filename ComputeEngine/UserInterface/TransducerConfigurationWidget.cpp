@@ -71,9 +71,9 @@ void UserInterface::TransducerConfigurationWidget(
 
   // Display Result
   if (parse_text_success) {
-    ImGui::TextColored(Colors::Green400, "Transducer configuration loaded");
+    ImGui::TextColored(Colors::Green300, "Transducer configuration loaded");
   } else {
-    ImGui::TextColored(Colors::Red400, "Transducer configuration NOT loaded");
+    ImGui::TextColored(Colors::Red300, "Transducer configuration NOT loaded");
   }
   ImGui::PushTextWrapPos(350.0);
   ImGui::TextUnformatted(parse_text_result.c_str());

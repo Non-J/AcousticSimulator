@@ -74,17 +74,17 @@ void UserInterface::SimulationControlWidget(
   ImGui::PushTextWrapPos(250);
   if (sp.assume_large_particle_density) {
     ImGui::TextColored(
-        Colors::Amber400,
+        Colors::Amber300,
         "Assume that particle density approach infinity. Some parameters are ignored.");
   }
   if (invalid_parameter.empty()) {
-    ImGui::TextColored(Colors::Green400, "Simulation parameters loaded");
+    ImGui::TextColored(Colors::Green300, "Simulation parameters loaded");
 
     ImGui::Text("K1: %e", sp.constant_k1());
     ImGui::Text("K2: %e", sp.constant_k2());
   } else {
-    ImGui::TextColored(Colors::Red400, "Simulation parameters NOT loaded");
-    ImGui::TextColored(Colors::Red400, "%s", invalid_parameter.c_str());
+    ImGui::TextColored(Colors::Red300, "Simulation parameters NOT loaded");
+    ImGui::TextColored(Colors::Red300, "%s", invalid_parameter.c_str());
   }
   ImGui::PopTextWrapPos();
 
