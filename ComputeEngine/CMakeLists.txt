@@ -17,8 +17,8 @@ target_link_libraries(ComputeEngine PRIVATE docopt_s)
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(ComputeEngine PRIVATE fmt::fmt fmt::fmt-header-only)
 
-find_package(GSL REQUIRED)
-target_link_libraries(ComputeEngine PRIVATE GSL::gsl GSL::gslcblas)
+# find_package(GSL REQUIRED)
+# target_link_libraries(ComputeEngine PRIVATE GSL::gsl GSL::gslcblas)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(ComputeEngine PRIVATE nlohmann_json nlohmann_json::nlohmann_json)

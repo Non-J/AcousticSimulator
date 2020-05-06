@@ -1,6 +1,6 @@
 #include <fmt/format.h>
-#include <gsl/gsl_sf_bessel.h>
 #include <imgui.h>
+#include <cmath>
 #include <mutex>
 #include <thread>
 #include "../Utilities/AtomicLogger.h"
@@ -12,7 +12,7 @@ void executeBenchmark(AtomicLogger::AtomicLogger* result, bool* running) {
   // prevent compiler optimization
   volatile double r = 0;
   for (auto i = 0; i < 25000000; ++i) {
-    r = r + gsl_sf_bessel_J0(6.0);
+    r = r + std::cyl_bessel_j(1.0, 6.0);
   }
   result->log("25M sequential gsl_sf_bessel_J0");
 
@@ -21,7 +21,7 @@ void executeBenchmark(AtomicLogger::AtomicLogger* result, bool* running) {
   r = 0;
 #pragma omp parallel for
   for (auto i = 0; i < 25000000; ++i) {
-    const auto v = gsl_sf_bessel_J0(6.0);
+    const auto v = std::cyl_bessel_j(1.0, 6.0);
     {
       const auto scoped_lock = std::scoped_lock<std::mutex>(omp_result_lock);
       r = r + v;
