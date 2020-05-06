@@ -4,8 +4,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "DataStore.h"
 #include "UserInterface/UserInterface.h"
+#include "Utilities/DataStore.h"
 
 int main(int /*argc*/, char** /*argv*/) {
   auto global_data_store = DataStore::GlobalDataStore();
