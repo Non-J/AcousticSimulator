@@ -6,12 +6,45 @@
 #include <fstream>
 #include <numbers>
 #include <string_view>
+#include "../Utilities/AtomicLogger.h"
 #include "BlockStorage.h"
 
 namespace Computation {
 
 // constant i
 constexpr auto i = std::complex<double>(0, 1);
+
+constexpr double SimulationParameter::particle_volume() const {
+  return (4.0 / 3.0) * std::numbers::pi * this->particle_radius *
+         this->particle_radius * this->particle_radius;
+}
+constexpr double SimulationParameter::angular_frequency() const {
+  return this->frequency / (2.0 * std::numbers::pi);
+}
+constexpr double SimulationParameter::constant_k1() const {
+  const auto particle_volume = this->particle_volume();
+
+  const auto i1 = this->air_wave_speed * this->air_wave_speed * this->air_density;
+  const auto i2 =
+      this->particle_wave_speed * this->particle_wave_speed * this->particle_density;
+
+  if (this->assume_large_particle_density) {
+    return particle_volume / i1 / 4.0;
+  }
+  return particle_volume * (1.0 / i1 - 1.0 / i2) / 4.0;
+}
+constexpr double SimulationParameter::constant_k2() const {
+  const auto i1 = this->particle_volume() * 3.0 / 4.0;
+  const auto w = this->angular_frequency();
+  const auto i2 = w * w * this->air_density;
+  const auto i3 = this->air_density + 2.0 * this->particle_density;
+  const auto i4 = this->air_density - this->particle_density;
+
+  if (this->assume_large_particle_density) {
+    return i1 / i2 / -2.0;
+  }
+  return i1 * (i4 / i3 / i2);
+}
 
 std::complex<double> compute_pressure(const Vec3<double>& point,
                                       const Transducer& transducer,
@@ -43,28 +76,11 @@ constexpr double euclidean_norm_squared(const std::complex<double>& complex) {
 }
 
 void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
-                       std::mutex* simulation_logging_lock,
-                       std::string* simulation_logging,
+                       AtomicLogger::AtomicLogger* result_log,
                        std::filesystem::path export_directory,
                        std::vector<Computation::Transducer> transducers,
                        Computation::SimulationParameter simulation_parameter) {
-  // Logging
-  const auto time_begin = std::chrono::steady_clock::now();
-  auto time_begin_lap = time_begin;
-  const auto log = [&](std::string_view message) {
-    const auto scoped_lock = std::scoped_lock<std::mutex>(*simulation_logging_lock);
-    simulation_logging->append(
-        fmt::format(FMT_STRING("[{:d}/{:d} s] {:s}\n"),
-                    std::chrono::duration_cast<std::chrono::seconds>(
-                        std::chrono::steady_clock::now() - time_begin_lap)
-                        .count(),
-                    std::chrono::duration_cast<std::chrono::seconds>(
-                        std::chrono::steady_clock::now() - time_begin)
-                        .count(),
-                    message));
-    time_begin_lap = std::chrono::steady_clock::now();
-  };
-  log("Simulation process started");
+  result_log->log("Simulation process started");
 
   // force result is the smallest which will be used as the baseline
   const auto force_cnt =
@@ -98,7 +114,7 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
    * for some reason. Making this project works with clang-cl should resolve this
    * and allow loops to be indexed by std::size_t and some performance gain. */
 
-  log("Computing pressure");
+  result_log->log("Computing pressure");
 
   auto pressure_val = CellBlock<std::complex<double>>(pressure_cnt);
 
@@ -112,26 +128,11 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
     pressure_val.set_cell(id, pressure_result);
   }
 
-  log("Computing potential");
+  result_log->log("Computing potential");
 
   // constant used for potential computation
-  const auto particle_volume =
-      (4.0 / 3.0) * std::numbers::pi * simulation_parameter.particle_radius *
-      simulation_parameter.particle_radius * simulation_parameter.particle_radius;
-  const auto k1 = (1.0 / 4.0) * particle_volume *
-                  ((1.0 / (simulation_parameter.air_wave_speed *
-                           simulation_parameter.air_wave_speed *
-                           simulation_parameter.air_density)) -
-                   (1.0 / (simulation_parameter.particle_wave_speed *
-                           simulation_parameter.particle_wave_speed *
-                           simulation_parameter.particle_density)));
-  const auto freq = simulation_parameter.frequency / (2.0 * std::numbers::pi);
-  const auto k2 =
-      (3.0 / 4.0) * particle_volume *
-      ((simulation_parameter.air_density - simulation_parameter.particle_density) /
-       (freq * freq * simulation_parameter.air_density *
-        (simulation_parameter.air_density +
-         2.0 * simulation_parameter.particle_density)));
+  const auto k1 = simulation_parameter.constant_k1();
+  const auto k2 = simulation_parameter.constant_k2();
 
   auto potential_val = CellBlock<double>(potential_cnt);
 
@@ -164,7 +165,7 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
     potential_val.set_cell(id, u);
   }
 
-  log("Computing force");
+  result_log->log("Computing force");
 
   auto force_x_val = CellBlock<double>(force_cnt);
   auto force_y_val = CellBlock<double>(force_cnt);
@@ -195,7 +196,7 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
     force_z_val.set_cell(id, f_z);
   }
 
-  log("Exporting data");
+  result_log->log("Exporting data");
 
   auto pressure_exp =
       std::ofstream(export_directory / std::string_view("pressure_result.bin"),
@@ -229,7 +230,7 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
   force_z_exp.write(force_z_val.get_raw_bytes(), force_z_val.size() * sizeof(double));
   force_z_exp.close();
 
-  log("Exporting metadata");
+  result_log->log("Exporting metadata");
 
   auto metadata = nlohmann::json();
 
@@ -251,7 +252,7 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
   metadata_export.close();
 
   // Unlock process
-  log("Simulation process done");
+  result_log->log("Simulation process done");
   process_lock_simulation_running->store(false);
 }
 

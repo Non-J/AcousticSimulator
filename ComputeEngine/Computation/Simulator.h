@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <mutex>
 #include <string>
+#include "../Utilities/AtomicLogger.h"
 #include "Vec3.h"
 
 namespace Computation {
@@ -35,6 +36,8 @@ struct SimulationParameter {
   double cell_size, frequency, air_density, air_wave_speed, particle_radius,
       particle_density, particle_wave_speed;
 
+  bool assume_large_particle_density = true;
+
   [[nodiscard]] std::string checkInvalidParameter() const {
     if (this->cell_size <= 0) {
       return "Cell size is not positive";
@@ -51,20 +54,25 @@ struct SimulationParameter {
     if (this->particle_radius <= 0) {
       return "Particle radius is not positive";
     }
-    if (this->particle_density <= 0) {
+    if (not assume_large_particle_density and this->particle_density <= 0) {
       return "Particle density is not positive";
     }
-    if (this->particle_wave_speed <= 0) {
+    if (not assume_large_particle_density and this->particle_wave_speed <= 0) {
       return "Particle wave speed is not positive";
     }
 
     return std::string();
   };
+
+  [[nodiscard]] constexpr double particle_volume() const;
+  [[nodiscard]] constexpr double angular_frequency() const;
+
+  [[nodiscard]] constexpr double constant_k1() const;
+  [[nodiscard]] constexpr double constant_k2() const;
 };
 
 void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
-                       std::mutex* simulation_logging_lock,
-                       std::string* simulation_logging,
+                       AtomicLogger::AtomicLogger* result_log,
                        std::filesystem::path export_directory,
                        std::vector<Computation::Transducer> transducers,
                        Computation::SimulationParameter simulation_parameter);

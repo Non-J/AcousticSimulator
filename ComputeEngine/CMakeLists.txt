@@ -1,5 +1,5 @@
 add_executable(ComputeEngine
-        main.cpp Utilities/DataStore.h Utilities/DataStore.cpp
+        main.cpp Utilities/DataStore.h Utilities/DataStore.cpp Utilities/AtomicLogger.cpp Utilities/AtomicLogger.h
         imgui_stdlib/imgui_stdlib.cpp
         UserInterface/UserInterface.h UserInterface/MenuBar.cpp UserInterface/SetupStyle.cpp
         UserInterface/TransducerConfigurationWidget.cpp UserInterface/SimulationControlWidget.cpp

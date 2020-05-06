@@ -2,9 +2,9 @@
 #include <imgui.h>
 #include <atomic>
 #include <filesystem>
-#include <mutex>
 #include <thread>
 #include "../Computation/Simulator.h"
+#include "../Utilities/AtomicLogger.h"
 #include "../Utilities/DataStore.h"
 #include "../imgui_stdlib/imgui_stdlib.h"
 #include "Colors.h"
@@ -20,8 +20,7 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
   static auto simulation_thread_forking_error = std::string();
 
   static auto simulation_running = std::atomic<bool>(false);
-  static auto simulation_logging_lock = std::mutex();
-  static auto simulation_logging = std::string();
+  static auto simulation_logging = AtomicLogger::AtomicLogger();
 
   // Let user specify where to export simulation result
   ImGui::TextUnformatted("Export folder path");
@@ -78,18 +77,13 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
         // Start simulation
         simulation_running.store(true);
         simulation_thread_forking_error = std::string();
-        {
-          const auto scoped_lock =
-              std::scoped_lock<std::mutex>(simulation_logging_lock);
-          simulation_logging.clear();
-        }
+        simulation_logging.clear();
 
         // Fork simulation thread
-        auto simulation_thread =
-            std::thread(Computation::simulationProcess, &simulation_running,
-                        &simulation_logging_lock, &simulation_logging, export_directory,
-                        global_data_store.simulation_data.transducers,
-                        global_data_store.simulation_data.simulation_parameter);
+        auto simulation_thread = std::thread(
+            Computation::simulationProcess, &simulation_running, &simulation_logging,
+            export_directory, global_data_store.simulation_data.transducers,
+            global_data_store.simulation_data.simulation_parameter);
         simulation_thread.detach();
 
       } catch (const std::exception& e) {
@@ -107,8 +101,8 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
     ImGui::TextColored(Colors::Red400, "%s", simulation_thread_forking_error.c_str());
   }
   {
-    const auto scoped_lock = std::scoped_lock<std::mutex>(simulation_logging_lock);
-    ImGui::TextUnformatted(simulation_logging.c_str());
+    const auto result = simulation_logging.read();
+    ImGui::TextUnformatted(result.second.data());
   }
   ImGui::PopTextWrapPos();
 

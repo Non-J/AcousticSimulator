@@ -37,6 +37,8 @@ Computation::SimulationParameter to_simulation_parameter(const nlohmann::json& j
   result.particle_radius = json.at("particle_radius").get<double>();
   result.particle_density = json.at("particle_density").get<double>();
   result.particle_wave_speed = json.at("particle_wave_speed").get<double>();
+  result.assume_large_particle_density =
+      json.at("assume_large_particle_density").get<bool>();
   return result;
 }
 nlohmann::json from_simulation_parameter(
@@ -51,6 +53,8 @@ nlohmann::json from_simulation_parameter(
   result["particle_radius"] = simulation_parameter.particle_radius;
   result["particle_density"] = simulation_parameter.particle_density;
   result["particle_wave_speed"] = simulation_parameter.particle_wave_speed;
+  result["assume_large_particle_density"] =
+      simulation_parameter.assume_large_particle_density;
   return result;
 }
 

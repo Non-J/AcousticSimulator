@@ -62,19 +62,31 @@ void UserInterface::SimulationControlWidget(
   input |= ImGui::InputDouble("##particle_wave_speed", &sp.particle_wave_speed, NULL,
                               NULL, "%.3f m/s", ImGuiInputTextFlags_CharsScientific);
 
+  input |= ImGui::Checkbox("Assume large particle density",
+                           &sp.assume_large_particle_density);
+
   // Check invalid parameter if input changed
   static auto invalid_parameter = sp.checkInvalidParameter();
   if (input) {
     invalid_parameter = sp.checkInvalidParameter();
   }
+
+  ImGui::PushTextWrapPos(250);
+  if (sp.assume_large_particle_density) {
+    ImGui::TextColored(
+        Colors::Amber400,
+        "Assume that particle density approach infinity. Some parameters are ignored.");
+  }
   if (invalid_parameter.empty()) {
     ImGui::TextColored(Colors::Green400, "Simulation parameters loaded");
+
+    ImGui::Text("K1: %e", sp.constant_k1());
+    ImGui::Text("K2: %e", sp.constant_k2());
   } else {
     ImGui::TextColored(Colors::Red400, "Simulation parameters NOT loaded");
-    ImGui::PushTextWrapPos(250);
     ImGui::TextColored(Colors::Red400, "%s", invalid_parameter.c_str());
-    ImGui::PopTextWrapPos();
   }
+  ImGui::PopTextWrapPos();
 
   ImGui::Separator();
 

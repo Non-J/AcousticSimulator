@@ -1,52 +1,35 @@
 #include <fmt/format.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <imgui.h>
-#include <chrono>
 #include <mutex>
-#include <string_view>
 #include <thread>
+#include "../Utilities/AtomicLogger.h"
 #include "UserInterface.h"
 
-void executeBenchmark(std::mutex* logs_lock, std::string* logs, bool* running) {
-  const auto begin = std::chrono::steady_clock::now();
-  auto begin_lap = begin;
-
-  const auto log = [&](std::string_view message) {
-    const auto scoped_lock = std::scoped_lock<std::mutex>(*logs_lock);
-    *logs += fmt::format(FMT_STRING("[{:d}/{:d} ms] {:s}\n"),
-                         std::chrono::duration_cast<std::chrono::milliseconds>(
-                             std::chrono::steady_clock::now() - begin_lap)
-                             .count(),
-                         std::chrono::duration_cast<std::chrono::milliseconds>(
-                             std::chrono::steady_clock::now() - begin)
-                             .count(),
-                         message);
-    begin_lap = std::chrono::steady_clock::now();
-  };
-
-  log("Started");
+void executeBenchmark(AtomicLogger::AtomicLogger* result, bool* running) {
+  result->log("Started");
 
   // prevent compiler optimization
-  volatile double result = 0;
+  volatile double r = 0;
   for (auto i = 0; i < 25000000; ++i) {
-    result = result + gsl_sf_bessel_J0(6.0);
+    r = r + gsl_sf_bessel_J0(6.0);
   }
-  log("25M sequential gsl_sf_bessel_J0");
+  result->log("25M sequential gsl_sf_bessel_J0");
 
   auto omp_result_lock = std::mutex();
 
-  result = 0;
+  r = 0;
 #pragma omp parallel for
   for (auto i = 0; i < 25000000; ++i) {
     const auto v = gsl_sf_bessel_J0(6.0);
     {
       const auto scoped_lock = std::scoped_lock<std::mutex>(omp_result_lock);
-      result += v;
+      r = r + v;
     }
   }
-  log("25M openmp parallel for gsl_sf_bessel_J0");
+  result->log("25M openmp parallel for gsl_sf_bessel_J0");
 
-  log("Done");
+  result->log("Done");
   *running = false;
 }
 
@@ -58,22 +41,20 @@ void UserInterface::BenchmarkingWidget(DataStore::GlobalDataStore& global_data_s
   static auto version_information =
       fmt::format(FMT_STRING("Version: {:s} {:s}"), __DATE__, __TIME__);
   static auto benchmark_running = false;
-  static auto benchmark_result_lock = std::mutex();
-  static auto benchmark_result = std::string();
+  static auto benchmark_logging = AtomicLogger::AtomicLogger();
 
   ImGui::TextUnformatted(version_information.c_str());
 
   if (ImGui::Button("Run", ImVec2(400, 20)) and not benchmark_running) {
     benchmark_running = true;
-    auto thread = std::thread(executeBenchmark, &benchmark_result_lock,
-                              &benchmark_result, &benchmark_running);
+    auto thread = std::thread(executeBenchmark, &benchmark_logging, &benchmark_running);
     thread.detach();
   }
 
   ImGui::PushTextWrapPos(400);
   {
-    const auto scoped_lock = std::scoped_lock<std::mutex>(benchmark_result_lock);
-    ImGui::TextUnformatted(benchmark_result.c_str());
+    const auto result = benchmark_logging.read();
+    ImGui::TextUnformatted(result.second.data());
   }
   ImGui::PopTextWrapPos();
 
