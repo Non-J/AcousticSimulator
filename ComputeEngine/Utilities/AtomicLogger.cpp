@@ -5,13 +5,12 @@
 namespace AtomicLogger {
 
 AtomicLogger::AtomicLogger() {
-  this->construction_time = std::chrono::steady_clock::now();
-  this->last_log_time = this->construction_time;
+  this->clear();
 }
 
 void AtomicLogger::push(std::string_view message) {
   const auto scoped_lock = std::scoped_lock(this->log_lock);
-  this->log_string.append(message.begin(), message.end());
+  this->log_string.append(message);
 }
 
 void AtomicLogger::log(std::string_view message) {
@@ -20,10 +19,10 @@ void AtomicLogger::log(std::string_view message) {
   const auto prefix =
       fmt::format(FMT_STRING("[{:d}/{:d} s] "),
                   std::chrono::duration_cast<std::chrono::seconds>(
-                      std::chrono::steady_clock::now() - this->construction_time)
+                      std::chrono::steady_clock::now() - this->last_log_time)
                       .count(),
                   std::chrono::duration_cast<std::chrono::seconds>(
-                      std::chrono::steady_clock::now() - this->last_log_time)
+                      std::chrono::steady_clock::now() - this->construction_time)
                       .count());
 
   this->log_string.append(prefix);
@@ -36,6 +35,8 @@ void AtomicLogger::log(std::string_view message) {
 void AtomicLogger::clear() {
   const auto scoped_lock = std::scoped_lock(this->log_lock);
   this->log_string.clear();
+  this->construction_time = std::chrono::steady_clock::now();
+  this->last_log_time = this->construction_time;
 }
 
 std::pair<std::unique_lock<std::mutex>, std::string_view> AtomicLogger::read() {

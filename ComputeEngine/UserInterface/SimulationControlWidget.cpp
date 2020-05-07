@@ -35,7 +35,7 @@ void UserInterface::SimulationControlWidget(
   input |= ImGui::InputDouble("##cell_size", &sp.cell_size, NULL, NULL, "%.3e m",
                               ImGuiInputTextFlags_CharsScientific);
   ImGui::Text("Estimated cell count\n%.0f",
-              ((sp.end - sp.begin).elem_abs() / sp.cell_size).product());
+              ((sp.end - sp.begin).elem_abs() / sp.cell_size + 1.0).product());
 
   ImGui::TextUnformatted("Transducer frequency");
   input |= ImGui::InputDouble("##frequency", &sp.frequency, NULL, NULL, "%.3f Hz",
