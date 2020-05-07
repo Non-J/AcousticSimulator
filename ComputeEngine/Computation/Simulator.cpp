@@ -89,8 +89,9 @@ void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
           .cast<std::size_t>() +
       1;
   const auto force_beg = simulation_parameter.begin;
-  const auto force_end = simulation_parameter.begin +
-                         (force_cnt.cast<double>() * simulation_parameter.cell_size);
+  const auto force_end =
+      simulation_parameter.begin +
+      ((force_cnt.cast<double>() - 1.0) * simulation_parameter.cell_size);
   const auto force_blk = CellBlockInterpolation(force_cnt, force_beg, force_end);
   const auto force_lpn = int64_t(force_blk.get_cell_count());
 
