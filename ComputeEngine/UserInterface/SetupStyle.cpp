@@ -4144,6 +4144,7 @@ static const unsigned int RobotoMedium_compressed_data[115744 / 4] = {
 
 void UserInterface::SetupStyle() {
   ImGuiIO& io = ImGui::GetIO();
+  io.Fonts->Clear();
   io.FontDefault = io.Fonts->AddFontFromMemoryCompressedTTF(
       RobotoMedium_compressed_data, RobotoMedium_compressed_size, 14.0F);
   ImGui::SFML::UpdateFontTexture();

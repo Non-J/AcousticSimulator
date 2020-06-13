@@ -13,7 +13,7 @@ int main(int /*argc*/, char** /*argv*/) {
   // Window Setup
   auto window = sf::RenderWindow(sf::VideoMode(1200, 675), "ComputeEngine");
   window.setFramerateLimit(30);
-  ImGui::SFML::Init(window);
+  ImGui::SFML::Init(window, false);
   UserInterface::SetupStyle();
 
   // Main loop

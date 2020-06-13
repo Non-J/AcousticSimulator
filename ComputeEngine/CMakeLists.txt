@@ -1,24 +1,14 @@
-add_executable(ComputeEngine
-        main.cpp Utilities/DataStore.h Utilities/DataStore.cpp Utilities/AtomicLogger.cpp Utilities/AtomicLogger.h
-        imgui_stdlib/imgui_stdlib.cpp
-        UserInterface/UserInterface.h UserInterface/MenuBar.cpp UserInterface/SetupStyle.cpp
-        UserInterface/TransducerConfigurationWidget.cpp UserInterface/SimulationControlWidget.cpp
-        UserInterface/BenchmarkingWidget.cpp UserInterface/RunSimulationWidget.cpp UserInterface/Colors.h
-        Computation/Vec3.h Computation/Vec3.cpp Computation/BlockStorage.h Computation/Simulator.h Computation/Simulator.cpp)
-
+file(GLOB SOURCES "**/*.h" "**/*.cpp")
+add_executable(ComputeEngine main.cpp ${SOURCES})
 target_link_libraries(ComputeEngine PRIVATE project_options project_warnings)
 
 find_package(OpenMP REQUIRED)
-target_link_libraries(ComputeEngine PRIVATE OpenMP::OpenMP_CXX)
-
-find_package(docopt CONFIG REQUIRED)
-target_link_libraries(ComputeEngine PRIVATE docopt_s)
+if (OpenMP_CXX_FOUND)
+  target_link_libraries(ComputeEngine PRIVATE OpenMP::OpenMP_CXX)
+endif ()
 
 find_package(fmt CONFIG REQUIRED)
-target_link_libraries(ComputeEngine PRIVATE fmt::fmt fmt::fmt-header-only)
-
-# find_package(GSL REQUIRED)
-# target_link_libraries(ComputeEngine PRIVATE GSL::gsl GSL::gslcblas)
+target_link_libraries(ComputeEngine PRIVATE fmt::fmt)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(ComputeEngine PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
