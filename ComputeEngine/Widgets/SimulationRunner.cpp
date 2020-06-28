@@ -3,18 +3,18 @@
 #include <atomic>
 #include <filesystem>
 #include <thread>
+#include "../Computation/Config.h"
 #include "../Computation/Simulator.h"
 #include "../Utilities/AtomicLogger.h"
-#include "../Utilities/DataStore.h"
 #include "../imgui_stdlib/imgui_stdlib.h"
 #include "Colors.h"
-#include "UserInterface.h"
+#include "Widgets.h"
 
-void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_store) {
+void Widgets::SimulationRunner(
+    const std::vector<Config::Transducer>& transducers,
+    const Config::SimulationParameter& simulation_parameters) {
   auto window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
-  ImGui::Begin("Run Simulation",
-               &global_data_store.toolbox_open.TransducerConfigurationWidget,
-               window_flags);
+  ImGui::Begin("Run Simulation", nullptr, window_flags);
 
   static auto export_directory_name = std::string("simulation_result");
   static auto simulation_thread_forking_error = std::string();
@@ -55,8 +55,7 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
 
       try {
         // Checks if transducers are invalid
-        for (const Computation::Transducer& transducer :
-             global_data_store.simulation_data.transducers) {
+        for (const auto& transducer : transducers) {
           const auto invalid_transducer = transducer.checkInvalidParameter();
           if (not invalid_transducer.empty()) {
             throw std::exception(invalid_transducer.c_str());
@@ -65,8 +64,7 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
 
         // Checks if parameters are invalid
         const auto invalid_simulation_parameter =
-            global_data_store.simulation_data.simulation_parameter
-                .checkInvalidParameter();
+            simulation_parameters.checkInvalidParameter();
         if (not invalid_simulation_parameter.empty()) {
           throw std::exception(invalid_simulation_parameter.c_str());
         }
@@ -82,8 +80,8 @@ void UserInterface::RunSimulationWidget(DataStore::GlobalDataStore& global_data_
         // Fork simulation thread
         auto simulation_thread = std::thread(
             Computation::simulationProcess, &simulation_running, &simulation_logging,
-            export_directory, global_data_store.simulation_data.transducers,
-            global_data_store.simulation_data.simulation_parameter);
+            export_directory, transducers,
+            simulation_parameters);
         simulation_thread.detach();
 
       } catch (const std::exception& e) {

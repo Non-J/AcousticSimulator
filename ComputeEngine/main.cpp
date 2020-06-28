@@ -1,20 +1,22 @@
 #include <imgui-SFML.h>
-#include <imgui.h>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "UserInterface/UserInterface.h"
-#include "Utilities/DataStore.h"
+#include "Widgets/SetupStyle.h"
+#include "Widgets/Widgets.h"
+#include "Computation/Config.h"
 
 int main(int /*argc*/, char** /*argv*/) {
-  auto global_data_store = DataStore::GlobalDataStore();
-
   // Window Setup
   auto window = sf::RenderWindow(sf::VideoMode(1200, 675), "ComputeEngine");
   window.setFramerateLimit(30);
   ImGui::SFML::Init(window, false);
-  UserInterface::SetupStyle();
+  Widgets::SetupStyle();
+
+  // Global data and configurations
+  auto transducers = std::vector<Config::Transducer>();
+  auto simulation_parameters = Config::SimulationParameter();
 
   // Main loop
   auto deltaClock = sf::Clock();
@@ -30,23 +32,9 @@ int main(int /*argc*/, char** /*argv*/) {
 
     ImGui::SFML::Update(window, deltaClock.restart());
 
-    UserInterface::ToolsMenu(global_data_store);
-
-    if (global_data_store.toolbox_open.ImGuiDemo) {
-      ImGui::ShowDemoWindow(&global_data_store.toolbox_open.ImGuiDemo);
-    }
-    if (global_data_store.toolbox_open.TransducerConfigurationWidget) {
-      UserInterface::TransducerConfigurationWidget(global_data_store);
-    }
-    if (global_data_store.toolbox_open.SimulationControlWidget) {
-      UserInterface::SimulationControlWidget(global_data_store);
-    }
-    if (global_data_store.toolbox_open.RunSimulationWidget) {
-      UserInterface::RunSimulationWidget(global_data_store);
-    }
-    if (global_data_store.toolbox_open.BenchmarkingWidget) {
-      UserInterface::BenchmarkingWidget(global_data_store);
-    }
+    Widgets::TransducerConfig(transducers);
+    Widgets::SimulationConfig(simulation_parameters);
+    Widgets::SimulationRunner(transducers, simulation_parameters);
 
     window.clear();
     ImGui::SFML::Render(window);

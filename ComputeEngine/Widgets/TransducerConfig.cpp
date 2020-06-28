@@ -1,16 +1,12 @@
 #include <fmt/format.h>
 #include <imgui.h>
-#include "../Utilities/DataStore.h"
 #include "../imgui_stdlib/imgui_stdlib.h"
 #include "Colors.h"
-#include "UserInterface.h"
+#include "Widgets.h"
 
-void UserInterface::TransducerConfigurationWidget(
-    DataStore::GlobalDataStore& global_data_store) {
+void Widgets::TransducerConfig(std::vector<Config::Transducer>& transducers) {
   auto window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse;
-  ImGui::Begin("Transducer Configuration",
-               &global_data_store.toolbox_open.TransducerConfigurationWidget,
-               window_flags);
+  ImGui::Begin("Transducer Configuration", nullptr, window_flags);
 
   // User Input
   ImGui::TextUnformatted("Transducer configuration data");
@@ -42,7 +38,6 @@ void UserInterface::TransducerConfigurationWidget(
         throw std::exception("Input root is not an array");
       }
 
-      auto& transducers = global_data_store.simulation_data.transducers;
       transducers.clear();
 
       for (const auto& item : parsedResult) {

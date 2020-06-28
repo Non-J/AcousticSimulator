@@ -1,6 +1,6 @@
 #include <imgui-SFML.h>
 #include <imgui.h>
-#include "UserInterface.h"
+#include "SetupStyle.h"
 
 // region StaticStyleData
 static const unsigned int RobotoMedium_compressed_size = 115741;
@@ -4142,7 +4142,7 @@ static const unsigned int RobotoMedium_compressed_data[115744 / 4] = {
 };
 // endregion
 
-void UserInterface::SetupStyle() {
+void Widgets::SetupStyle() {
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
   io.FontDefault = io.Fonts->AddFontFromMemoryCompressedTTF(

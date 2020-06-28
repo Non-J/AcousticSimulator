@@ -1,10 +1,9 @@
-#include "DataStore.h"
-#include "../Computation/Vec3.h"
+#include "Config.h"
 
 namespace JSONConvert {
 
-Computation::Transducer to_transducer(const nlohmann::json& json) {
-  auto result = Computation::Transducer();
+Config::Transducer to_transducer(const nlohmann::json& json) {
+  auto result = Config::Transducer();
   result.id = json.at("id").get<std::string>();
   result.position = Vec3<double>(json.at("position"));
   result.target = Vec3<double>(json.at("target"));
@@ -14,7 +13,7 @@ Computation::Transducer to_transducer(const nlohmann::json& json) {
   result.output_power = json.at("output_power").get<double>();
   return result;
 }
-nlohmann::json from_transducer(const Computation::Transducer& transducer) {
+nlohmann::json from_transducer(const Config::Transducer& transducer) {
   auto result = nlohmann::json();
   result["id"] = transducer.id;
   result["position"] = transducer.position.to_json();
@@ -26,8 +25,8 @@ nlohmann::json from_transducer(const Computation::Transducer& transducer) {
   return result;
 }
 
-Computation::SimulationParameter to_simulation_parameter(const nlohmann::json& json) {
-  auto result = Computation::SimulationParameter();
+Config::SimulationParameter to_simulation_parameter(const nlohmann::json& json) {
+  auto result = Config::SimulationParameter();
   result.begin = Vec3<double>(json.at("begin"));
   result.end = Vec3<double>(json.at("end"));
   result.cell_size = json.at("cell_size").get<double>();
@@ -42,7 +41,7 @@ Computation::SimulationParameter to_simulation_parameter(const nlohmann::json& j
   return result;
 }
 nlohmann::json from_simulation_parameter(
-    const Computation::SimulationParameter& simulation_parameter) {
+    const Config::SimulationParameter& simulation_parameter) {
   auto result = nlohmann::json();
   result["begin"] = simulation_parameter.begin.to_json();
   result["end"] = simulation_parameter.end.to_json();

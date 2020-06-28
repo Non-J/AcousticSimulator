@@ -1,12 +1,10 @@
 #include "Simulator.h"
-#include <fmt/format.h>
 #include <chrono>
 #include <complex>
 #include <filesystem>
 #include <fstream>
 #include <numbers>
 #include <string_view>
-#include "../Utilities/AtomicLogger.h"
 #include "BlockStorage.h"
 
 namespace Computation {
@@ -14,41 +12,9 @@ namespace Computation {
 // constant i
 constexpr auto i = std::complex<double>(0, 1);
 
-constexpr double SimulationParameter::particle_volume() const {
-  return (4.0 / 3.0) * std::numbers::pi * this->particle_radius *
-         this->particle_radius * this->particle_radius;
-}
-constexpr double SimulationParameter::angular_frequency() const {
-  return this->frequency / (2.0 * std::numbers::pi);
-}
-constexpr double SimulationParameter::constant_k1() const {
-  const auto particle_volume = this->particle_volume();
-
-  const auto i1 = this->air_wave_speed * this->air_wave_speed * this->air_density;
-  const auto i2 =
-      this->particle_wave_speed * this->particle_wave_speed * this->particle_density;
-
-  if (this->assume_large_particle_density) {
-    return particle_volume / i1 / 4.0;
-  }
-  return particle_volume * (1.0 / i1 - 1.0 / i2) / 4.0;
-}
-constexpr double SimulationParameter::constant_k2() const {
-  const auto i1 = this->particle_volume() * 3.0 / 4.0;
-  const auto w = this->angular_frequency();
-  const auto i2 = w * w * this->air_density;
-  const auto i3 = this->air_density + 2.0 * this->particle_density;
-  const auto i4 = this->air_density - this->particle_density;
-
-  if (this->assume_large_particle_density) {
-    return i1 / i2 / -2.0;
-  }
-  return i1 * (i4 / i3 / i2);
-}
-
 std::complex<double> compute_pressure(const Vec3<double>& point,
-                                      const Transducer& transducer,
-                                      const SimulationParameter& simulation_parameter) {
+                                      const Config::Transducer& transducer,
+                                      const Config::SimulationParameter& simulation_parameter) {
   const auto angle = transducer.position.cosine_angle(transducer.target, point);
   const auto dist = transducer.position.euclidean_distance(point);
   const auto wave_number = 2.0 * std::numbers::pi * simulation_parameter.frequency /
@@ -78,8 +44,8 @@ constexpr double euclidean_norm_squared(const std::complex<double>& complex) {
 void simulationProcess(std::atomic<bool>* process_lock_simulation_running,
                        AtomicLogger::AtomicLogger* result_log,
                        std::filesystem::path export_directory,
-                       std::vector<Computation::Transducer> transducers,
-                       Computation::SimulationParameter simulation_parameter) {
+                       std::vector<Config::Transducer> transducers,
+                       Config::SimulationParameter simulation_parameter) {
   result_log->log("Simulation process started");
 
   // force result is the smallest which will be used as the baseline
