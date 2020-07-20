@@ -18,7 +18,7 @@
   "dependencies": {
     "golden-layout": "^1.5.9",
     "jquery": "^3.5.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "sirv-cli": "^0.4.4",
     "tabulator-tables": "^4.6.2",
     "three": "^0.112.1"
