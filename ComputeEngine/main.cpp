@@ -2,10 +2,8 @@
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
-
 #include "Widgets/SetupStyle.h"
-#include "Widgets/Widgets.h"
-#include "Computation/Config.h"
+#include "Widgets/TransducerLoader.h"
 
 int main(int /*argc*/, char** /*argv*/) {
   // Window Setup
@@ -13,10 +11,6 @@ int main(int /*argc*/, char** /*argv*/) {
   window.setFramerateLimit(30);
   ImGui::SFML::Init(window, false);
   Widgets::SetupStyle();
-
-  // Global data and configurations
-  auto transducers = std::vector<Config::Transducer>();
-  auto simulation_parameters = Config::SimulationParameter();
 
   // Main loop
   auto deltaClock = sf::Clock();
@@ -32,9 +26,8 @@ int main(int /*argc*/, char** /*argv*/) {
 
     ImGui::SFML::Update(window, deltaClock.restart());
 
-    Widgets::TransducerConfig(transducers);
-    Widgets::SimulationConfig(simulation_parameters);
-    Widgets::SimulationRunner(transducers, simulation_parameters);
+    static auto tl_test = Widgets::TransducerLoader();
+    tl_test.render();
 
     window.clear();
     ImGui::SFML::Render(window);

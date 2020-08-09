@@ -1,7 +1,6 @@
 #pragma once
-
+/*
 #include <vector>
-#include "../Computation/Config.h"
 
 namespace Widgets {
 
@@ -11,3 +10,4 @@ void SimulationRunner(const std::vector<Config::Transducer>& transducers,
                       const Config::SimulationParameter& simulation_parameters);
 
 }  // namespace Widgets
+*/

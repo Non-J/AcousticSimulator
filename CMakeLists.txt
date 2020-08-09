@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.17)
 
 # Project
 project(AcousticSimulator)
@@ -22,23 +22,9 @@ add_library(project_warnings INTERFACE)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
-# enable cache system
-include(cmake/Cache.cmake)
-
-# standard compiler warnings
-include(cmake/CompilerWarnings.cmake)
-set_project_warnings(project_warnings)
-
 # sanitizer options if supported by compiler
 include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
-
-# enable doxygen
-include(cmake/Doxygen.cmake)
-enable_doxygen()
-
-# allow for static analysis options
-include(cmake/StaticAnalyzers.cmake)
 
 # PCH
 option(ENABLE_PCH "Enable Precompiled Headers" FALSE)
@@ -49,21 +35,25 @@ endif ()
 # packages
 set(PACKAGES "")
 list(APPEND PACKAGES "fmt")
+list(APPEND PACKAGES "gtest")
 list(APPEND PACKAGES "imgui")
 list(APPEND PACKAGES "ImGui-SFML")
 list(APPEND PACKAGES "nlohmann-json")
 list(APPEND PACKAGES "SFML")
 
-# static linking
-if (ENABLE_STATIC_LINKING)
-  include(cmake/ucm.cmake)
-  ucm_set_runtime(STATIC)
-  set(VCPKG_TARGET_TRIPLET "x64-windows-static")
-endif ()
+include(cmake/ClangClWorkaround.cmake)
 
 # package manager
 include(cmake/pmm.cmake)
-pmm(VCPKG REVISION "2020.04" TRIPLET "${VCPKG_TARGET_TRIPLET}" REQUIRES "${PACKAGES}")
+pmm(VCPKG REVISION "2020.06" REQUIRES "${PACKAGES}")
+
+# tests
+option(ENABLE_TESTING "Enable Test Builds" ON)
+if (ENABLE_TESTING)
+  enable_testing()
+  message(STATUS "Building Tests.")
+  add_subdirectory(ComputeEngineTests)
+endif ()
 
 # Sources
 add_subdirectory(ComputeEngine)

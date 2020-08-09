@@ -4,7 +4,7 @@
 # lable.md
 
 function(set_project_warnings project_name)
-  option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" FALSE)
+  option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" TRUE)
 
   set(MSVC_WARNINGS
       /W4 # Baseline reasonable warnings
@@ -62,6 +62,7 @@ function(set_project_warnings project_name)
       )
 
   if (MSVC)
+    string (REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT}")
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
   elseif (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(PROJECT_WARNINGS ${CLANG_WARNINGS})
