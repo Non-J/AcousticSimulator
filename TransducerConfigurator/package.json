@@ -21,6 +21,6 @@
     "lodash": "^4.17.19",
     "sirv-cli": "^0.4.4",
     "tabulator-tables": "^4.6.2",
-    "three": "^0.112.1"
+    "three": "^0.125.0"
   }
 }
